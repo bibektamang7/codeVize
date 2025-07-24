@@ -4,8 +4,8 @@
 	"type": "module",
 	"private": true,
 	"exports": {
-		"db/prisma": "./src/prismaClient.ts",
-		"db/chroma": "./src/chromaDB.ts"
+		"./prisma": "./src/prismaClient.ts",
+		"./chroma": "./src/chromaDB.ts"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
