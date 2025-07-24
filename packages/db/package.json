@@ -1,13 +1,21 @@
 {
-  "name": "db",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest",
-    "prisma": "^6.12.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  }
+	"name": "db",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"exports": {
+		"db/prisma": "./src/prismaClient.ts",
+		"db/chroma": "./src/chromaDB.ts"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"prisma": "^6.12.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@prisma/client": "^6.12.0",
+		"chromadb": "^3.0.9"
+	}
 }
