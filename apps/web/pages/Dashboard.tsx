@@ -9,6 +9,7 @@ import {
 	Trash2,
 	Archive,
 	ExternalLink,
+	Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 
-export default function Dashboard() {
+const Dashboard = () => {
 	const projects = [
 		{
 			id: 1,
@@ -118,7 +119,13 @@ export default function Dashboard() {
 
 				<main className="flex-1 p-6">
 					<div>
-						<h2 className="text-lg tracking-tight mb-6">Repositories</h2>
+						<div className="flex items-center justify-between mb-4">
+							<h2 className="text-lg tracking-tight">Repositories</h2>
+							<Button className="bg-white text-black hover:bg-gray-200">
+								<Plus className="w-4 h-4 mr-2" />
+								New Repository
+							</Button>
+						</div>
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							{projects.map((project) => (
 								<Link
@@ -225,4 +232,6 @@ export default function Dashboard() {
 			</div>
 		</div>
 	);
-}
+};
+
+export default Dashboard;
