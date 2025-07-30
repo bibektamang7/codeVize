@@ -1,0 +1,15 @@
+{
+  "name": "simple-git",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "simple-git": "^3.28.0"
+  }
+}
