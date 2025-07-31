@@ -16,10 +16,10 @@ datasource db {
 
 model User {
   id        String   @id @default(cuid())
-  githubId  String   @unique
+  googleId  String
   username  String
   email     String
-  avatarUrl String?
+  image     String
   createdAt DateTime @default(now())
   repos     Repo[]
 }
