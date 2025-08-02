@@ -16,7 +16,7 @@ datasource db {
 
 model User {
   id        String   @id @default(cuid())
-  googleId  String
+  githubId  String   @unique
   username  String
   email     String
   image     String
@@ -28,7 +28,9 @@ model Repo {
   id             String        @id @default(cuid())
   repoId         String        @unique
   repoName       String
+  languages      String[]
   installationId String
+  isActive       Boolean       @default(false)
   User           User          @relation(fields: [userId], references: [id])
   userId         String
   webhookUrl     String?
