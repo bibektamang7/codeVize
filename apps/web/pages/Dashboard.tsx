@@ -23,6 +23,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import RecentPullRequests from "@/components/RecentReviews";
 
 const Dashboard = () => {
 	const projects = [
@@ -228,6 +229,7 @@ const Dashboard = () => {
 							))}
 						</div>
 					</div>
+					<RecentPullRequests/>
 				</main>
 			</div>
 		</div>
