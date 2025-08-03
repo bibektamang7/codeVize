@@ -55,12 +55,16 @@ githubApp.webhooks.on("pull_request", async ({ payload }) => {
 	);
 	console.log("PR diff", diff);
 });
+
+githubApp.webhooks.on("installation.deleted", ({ octokit, payload }) => {
+	console.log("installed github app is deleted");
+});
+
 githubApp.webhooks.on(
-	"installation",
+	"installation.created",
 	async ({ id, octokit, name, payload }) => {
-		console.log(payload.installation);
+		const installationId = payload.installation.id.toString();
 		const githubAccountId = payload.installation.account?.id.toString();
-		// const senderId = payload.sender.id;
 		if (!githubAccountId) return;
 		const user = await prisma.user.findUnique({
 			where: { githubId: githubAccountId },
@@ -74,25 +78,30 @@ githubApp.webhooks.on(
 		const isSingleRepo = repos.data.repositories.length === 1;
 
 		const repoData = repos.data.repositories.map((repo) => ({
-			name: repo.name,
-			fullName: repo.full_name,
-			githubRepoId: repo.id.toString(),
-			htmlUrl: repo.html_url,
+			installationId: installationId,
+			repoName: repo.name,
+			repoFullName: repo.full_name,
+			repoURL: repo.html_url,
+			repoId: repo.id.toString(),
 			isActive: isSingleRepo,
 			userId: user.id,
+			languages: [repo.language || ""],
 		}));
 
 		await prisma.repo.createMany({
 			data: repoData,
 			skipDuplicates: true,
 		});
-
 		console.log("repos stored for user ", user.username);
 	}
 );
+
 githubApp.webhooks.on("issues.opened", ({ id, name, payload }) => {
 	console.log("new issue", payload.issue.title);
 	console.log("this is data", payload.issue);
+
+	try {
+	} catch (error) {}
 });
 githubApp.webhooks.onError((error) => {
 	if (error.name === "AggregateError") {
@@ -106,18 +115,8 @@ const middleware = createNodeMiddleware(githubApp.webhooks, {
 	path: "/api/v1/githubs/webhook",
 });
 
-app.use((req, res, next) => {
-	console.log("event occured");
-	next();
-});
-
 app.use(middleware);
 
-// import userRouter from "./v1/routes/user.route";
-// import githubRouter from "./v1/routes/github.route";
-
-// app.use("/api/v1/users", userRouter);
-// app.use("/api/v1/githubs",express.raw({type: "application/json"}), githubRouter);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
