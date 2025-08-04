@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  // output   = "../generated/prisma"
 }
 
 datasource db {
@@ -15,25 +15,59 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  githubId  String   @unique
+  id        String    @id @default(cuid())
+  githubId  String    @unique
   username  String
   email     String
   image     String
-  createdAt DateTime @default(now())
+  plan      Plan      @relation(fields: [planId], references: [id])
+  createdAt DateTime  @default(now())
   repos     Repo[]
+  Payment   Payment[]
+  planId    String
+}
+
+enum ExistingPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model Plan {
+  id          String       @id @default(cuid())
+  name        ExistingPlan @unique @default(FREE)
+  price       Float
+  maxRepos    Int // important field
+  description String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  User        User[]
+  Payment     Payment[]
+}
+
+model Payment {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  status   String
+  amount   Int
+  planId   String
+  plan     Plan     @relation(fields: [planId], references: [id])
+  cretedAt DateTime @default(now())
 }
 
 model Repo {
   id             String        @id @default(cuid())
   repoId         String        @unique
   repoName       String
+  repoFullName   String
+  repoURL        String
+  // FOR NOW ONLY, to get language, you can get it from the URL on installation
   languages      String[]
   installationId String
   isActive       Boolean       @default(false)
   User           User          @relation(fields: [userId], references: [id])
   userId         String
-  webhookUrl     String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   pullRequests   PullRequest[]
