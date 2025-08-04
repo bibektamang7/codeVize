@@ -22,8 +22,6 @@ import {
 } from "github-config";
 
 githubApp.webhooks.on("pull_request", async ({ payload }) => {
-	console.log("pr webhook callled so do check it out");
-	console.log("PR received", payload.pull_request.title);
 	const { owner } = payload.repository;
 	const prNumber = payload.pull_request.number;
 
@@ -54,9 +52,45 @@ githubApp.webhooks.on("pull_request", async ({ payload }) => {
 		}
 	);
 	console.log("PR diff", diff);
+	//TODO: give diff to LLM for review
 });
 
-githubApp.webhooks.on("installation.deleted", ({ octokit, payload }) => {
+githubApp.webhooks.on("installation.deleted", async ({ octokit, payload }) => {
+	const installationId = payload.installation.id.toString();
+	const repoId = payload.repository?.id.toString();
+	if (!installationId || !repoId) {
+		console.log("Installation Id or repo id required");
+		return;
+	}
+	try {
+		const repo = await prisma.repo.findUnique({
+			where: {
+				installationId,
+				repoId,
+			},
+		});
+
+		if (!repo) {
+			console.error("Repo not found for deletion");
+			throw new Error("Repo not found");
+		}
+
+		const deletedRepop = await prisma.repo.delete({
+			where: {
+				id: repo.id,
+			},
+		});
+
+		if (!deletedRepop) {
+			console.error("Failed to delete repo from database");
+			throw new Error("Failed to delete repo");
+		}
+
+		console.log("Repo delete from database successfully");
+	} catch (error) {
+		console.error("This is the error in the delete installation", error);
+		throw new Error("Failed to delete installed app");
+	}
 	console.log("installed github app is deleted");
 });
 
@@ -75,15 +109,12 @@ githubApp.webhooks.on(
 			return;
 		}
 		const repos = await octokit.rest.apps.listReposAccessibleToInstallation();
-		const isSingleRepo = repos.data.repositories.length === 1;
-
 		const repoData = repos.data.repositories.map((repo) => ({
 			installationId: installationId,
 			repoName: repo.name,
 			repoFullName: repo.full_name,
 			repoURL: repo.html_url,
 			repoId: repo.id.toString(),
-			isActive: isSingleRepo,
 			userId: user.id,
 			languages: [repo.language || ""],
 		}));
@@ -96,12 +127,26 @@ githubApp.webhooks.on(
 	}
 );
 
-githubApp.webhooks.on("issues.opened", ({ id, name, payload }) => {
-	console.log("new issue", payload.issue.title);
-	console.log("this is data", payload.issue);
-
+githubApp.webhooks.on("issues.opened", async ({ id, name, payload }) => {
+	const repoId = payload.repository.id.toString();
 	try {
-	} catch (error) {}
+		const existedRepo = await prisma.repo.findUnique({
+			where: {
+				repoId,
+			},
+		});
+
+		if (!existedRepo) {
+			throw new Error("Repo doesn't exists");
+		}
+		if (!existedRepo.isActive) {
+			return;
+		}
+
+		//TODO: here now call the LLM for issue tag generation
+	} catch (error) {
+		console.error("Failed in issue opened", error);
+	}
 });
 githubApp.webhooks.onError((error) => {
 	if (error.name === "AggregateError") {
@@ -116,7 +161,6 @@ const middleware = createNodeMiddleware(githubApp.webhooks, {
 });
 
 app.use(middleware);
-
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
