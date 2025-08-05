@@ -1,4 +1,4 @@
-import NextAuth, { Profile } from "next-auth";
+import NextAuth, { NextAuthResult, Profile } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import { prismaClient } from "db/prisma";
 import jwt from "jsonwebtoken";
@@ -8,7 +8,7 @@ type GithubProfile = Profile & {
 	avatar_url: string;
 };
 
-export const { handlers, signIn, signOut } = NextAuth({
+const nextAuth = NextAuth({
 	providers: [
 		GitHubProvider({
 			clientId: process.env.GITHUB_CLIENT_ID,
@@ -90,3 +90,10 @@ export const { handlers, signIn, signOut } = NextAuth({
 		},
 	},
 });
+
+const handlers: NextAuthResult["handlers"] = nextAuth.handlers;
+const auth: NextAuthResult["auth"] = nextAuth.auth;
+const signIn: NextAuthResult["signIn"] = nextAuth.signIn;
+const signOut: NextAuthResult["signOut"] = nextAuth.signOut;
+
+export { handlers, auth, signIn, signOut };

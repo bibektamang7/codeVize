@@ -5,14 +5,14 @@ async function middleware(req: NextRequest) {
 	const session = await auth();
 	const path = req.nextUrl.pathname;
 
-	const isPublicPath = path === "/login" || path === "/signup";
+	// const isPublicPath = path === "/login" || path === "/signup";
 
-	if (isPublicPath && session) {
-		return NextResponse.redirect(new URL("/dashboard", req.url));
-	}
-	if (!isPublicPath && !session) {
-		return NextResponse.redirect(new URL("/login", req.url));
-	}
+	// if (isPublicPath && session) {
+	// 	return NextResponse.redirect(new URL("/dashboard", req.url));
+	// }
+	// if (!isPublicPath && !session) {
+	// 	return NextResponse.redirect(new URL("/login", req.url));
+	// }
 
 	return NextResponse.next();
 }
