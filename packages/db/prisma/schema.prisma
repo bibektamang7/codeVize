@@ -15,16 +15,17 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  githubId  String    @unique
-  username  String
-  email     String
-  image     String
-  plan      Plan      @relation(fields: [planId], references: [id])
-  createdAt DateTime  @default(now())
-  repos     Repo[]
-  Payment   Payment[]
-  planId    String
+  id          String    @id @default(cuid())
+  githubId    String    @unique
+  username    String
+  email       String
+  image       String
+  activeRepos Int       @default(0)
+  plan        Plan      @relation(fields: [planId], references: [id])
+  createdAt   DateTime  @default(now())
+  repos       Repo[]
+  Payment     Payment[]
+  planId      String
 }
 
 enum ExistingPlan {
@@ -65,6 +66,7 @@ model Repo {
   // FOR NOW ONLY, to get language, you can get it from the URL on installation
   languages      String[]
   installationId String
+  isInstalled    Boolean       @default(false)
   isActive       Boolean       @default(false)
   User           User          @relation(fields: [userId], references: [id])
   userId         String
