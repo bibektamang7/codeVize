@@ -5,32 +5,32 @@ const model = new ChatOllama({
 	model: "codellama:7b",
 });
 
-interface State {
-	systemMessage: string;
-	title: string;
-	description: string;
-	rawSummary: string;
-	shortSummary: string;
-	filename: string;
-	fileContent: string;
-	fileDiff: string;
-	patches: string;
-	diff: string;
-	commentChain: string;
-	comment: string;
-}
+export async function codeReviewChain(input: string) {}
 
-const state: State = {
-	systemMessage: "",
-	title: "no title provided",
-	description: "no description provided",
-	rawSummary: "",
-	shortSummary: "",
-	filename: "",
-	fileContent: "file contents cannot be provided",
-	fileDiff: "file diff cannot be provided",
-	patches: "",
-	diff: "no diff",
-	commentChain: "no other comments on this patch",
-	comment: "no comment provided",
-};
+
+// async function checking() {
+// 	const res = await model.invoke([
+// 		{
+// 			content: "const hell = [1,2,3,47,23,4] how to sort the array",
+// 			role: "user",
+// 		},
+// 	]);
+// 	console.log(res);
+// }
+
+// checking();
+
+// const state: State = {
+// 	systemMessage: "",
+// 	title: "no title provided",
+// 	description: "no description provided",
+// 	rawSummary: "",
+// 	shortSummary: "",
+// 	filename: "",
+// 	fileContent: "file contents cannot be provided",
+// 	fileDiff: "file diff cannot be provided",
+// 	patches: "",
+// 	diff: "no diff",
+// 	commentChain: "no other comments on this patch",
+// 	comment: "no comment provided",
+// };

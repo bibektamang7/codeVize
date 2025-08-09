@@ -1,1 +1,3 @@
-console.log("Hello via Bun!");
+import { embedRepoChain } from "./chains/embedRepo";
+
+export { embedRepoChain };

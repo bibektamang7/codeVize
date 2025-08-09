@@ -1,18 +1,23 @@
 {
-  "name": "langflows",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "@langchain/core": "^0.3.66",
-    "@langchain/langgraph": "^0.3.11",
-    "@langchain/ollama": "^0.2.3",
-    "langchain": "^0.3.30"
-  }
+	"name": "langflows",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"exports": {
+		"./chains/embedRepo": "./chains/embedRepo.ts"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@langchain/core": "^0.3.66",
+		"@langchain/langgraph": "^0.3.11",
+		"@langchain/ollama": "^0.2.3",
+		"langchain": "^0.3.30",
+		"github-config": "*",
+		"db": "*"
+	}
 }
