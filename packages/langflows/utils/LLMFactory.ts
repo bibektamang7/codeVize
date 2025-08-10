@@ -1,15 +1,14 @@
-import { ChatOllama } from "@langchain/ollama";
-export const getLLMModel = async () => {
+import { CodeLLama } from "./CodeLLama";
+
+export const getModelClass = () => {
 	const provider = process.env.LLM_PROVIDER || "codellama:7b";
 	const baseUrl = process.env.LLM_BASE_URL || "http://localhost:11434";
+	const providerName = provider.split(":")[0];
 
-	switch (provider) {
-		case "codellama:7b":
-			return new ChatOllama({
-				baseUrl,
-				model: provider,
-			});
+	switch (providerName) {
+		case "codellama":
+			return new CodeLLama(provider, baseUrl);
 		default:
-			return;
+			return new CodeLLama(provider, baseUrl);
 	}
 };

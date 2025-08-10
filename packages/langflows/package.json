@@ -13,11 +13,13 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
+		"@langchain/community": "^0.3.50",
 		"@langchain/core": "^0.3.66",
 		"@langchain/langgraph": "^0.3.11",
 		"@langchain/ollama": "^0.2.3",
-		"langchain": "^0.3.30",
+		"db": "*",
 		"github-config": "*",
-		"db": "*"
+		"ignore": "^7.0.5",
+		"langchain": "^0.3.30"
 	}
 }

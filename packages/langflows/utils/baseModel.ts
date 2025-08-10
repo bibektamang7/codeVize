@@ -8,5 +8,6 @@ export interface ModelResponse {
 }
 
 export abstract class BaseModel {
-	abstract codeReviewChain(input: string): Promise<ModelResponse>;
+	abstract codeReviewChain(input: string): Promise<void>;
+	abstract embedRepoChain(): Promise<void>;
 }

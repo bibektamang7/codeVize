@@ -1,14 +1,17 @@
+import { ChatOllama } from "@langchain/ollama";
 import { BaseModel } from "./baseModel";
-import { getLLMModel } from "./LLMFactory";
 
 export class CodeLLama extends BaseModel {
+	model: ChatOllama;
+	constructor(provider: string, baseUrl: string) {
+		super();
+		this.model = new ChatOllama({
+			baseUrl: baseUrl || "http://localhost:11434",
+			model: provider || "codellama:7b",
+		});
+	}
 	async codeReviewChain(input: string) {
-		const model = await getLLMModel();
-		if (!model) {
-			return;
-		}
-
-		const modelResponse = await model.invoke([
+		const modelResponse = await this.model.invoke([
 			{
 				content:
 					"You are a code review assistant. Please review the following code and provide feedback.",
@@ -28,13 +31,14 @@ export class CodeLLama extends BaseModel {
 				role: "user",
 			},
 		]);
-		return {
-			tags: modelResponse.concat,
-			// reviewSummary: ;
-			// issuesFound:
-			// suggestions: [];
-			// commitHash: ;
-			// aiScore: ;
-		};
+		// return {
+		// 	tags: modelResponse.concat,
+		// 	// reviewSummary: ;
+		// 	// issuesFound:
+		// 	// suggestions: [];
+		// 	// commitHash: ;
+		// 	// aiScore: ;
+		// };
 	}
+	async embedRepoChain(): Promise<void> {}
 }
