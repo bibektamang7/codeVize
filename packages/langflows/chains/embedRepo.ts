@@ -1,4 +1,4 @@
-import { getModelClass } from "../utils/LLMFactory";
+// import { getModelClass } from "../utils/LLMFactory";
 import { GithubRepoLoader } from "@langchain/community/document_loaders/web/github";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
@@ -9,7 +9,7 @@ export async function embedRepoChain(
 	owner: string,
 	repoName: string
 ) {
-	const modelClass = getModelClass();
+	// const modelClass = getModelClass();
 
 	const githubURL = `https://github.com/${owner}/${repoName}`;
 	const githubLoader = getGithubLoader(githubURL);
@@ -17,17 +17,34 @@ export async function embedRepoChain(
 
 	const splitter = getTextSplitter();
 	const splitDocs = await splitter.splitDocuments(docs);
-	const chroma = await Chroma.fromDocuments(
-		splitDocs,
-		new OllamaEmbeddings({
-			model: "unclemusclez/jina-embeddings-v2-base-code",
-			baseUrl: "http://localhost:11434",
-		}),
-		{
-			url: "http://localhost:8000",
-		}
-	);
-	console.log("Docs loaded successfully", splitDocs);
+	const embeddingModelName =
+		process.env.EMBEDDING_MODEL || "unclemusclez/jina-embeddings-v2-base-code";
+	const embeddingModelUrl =
+		process.env.EMBEDDING_MODEL_URL || "http://localhost:11434";
+
+	// const vectorDBUrl = process.env.VECTOR_DB_URL || "http://localhost:8000";
+	const vectorDBHost = process.env.VECTOR_DB_HOST || "localhost";
+	const vectorDBPort = process.env.VECTOR_DB_PORT || 8000;
+	const vectorDBSSL =
+		process.env.VECTOR_DB_SSL || vectorDBHost === "localhost" ? false : true;
+	const embeddingModel = new OllamaEmbeddings({
+		model: embeddingModelName,
+		baseUrl: embeddingModelUrl,
+	});
+	const chromaStore = new Chroma(embeddingModel, {
+		collectionName: "repo_embeddings",
+		collectionMetadata: {
+			installationId: installationId,
+			repoId: `${owner}/${repoName}`,
+		},
+		clientParams: {
+			host: vectorDBHost,
+			port: vectorDBPort,
+			ssl: vectorDBSSL,
+		},
+	});
+	const stored = await chromaStore.addDocuments(splitDocs);
+	console.log("chroma store created successfully", stored);
 }
 
 const getTextSplitter = () => {

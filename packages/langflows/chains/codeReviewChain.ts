@@ -1,12 +1,21 @@
-import { ChatOllama } from "@langchain/ollama";
+import { getModelClass } from "../utils/LLMFactory";
+import { getAuthenticatedOctokit } from "github-config";
 
-const model = new ChatOllama({
-	baseUrl: "http://localhost:11434",
-	model: "codellama:7b",
-});
+export async function prCodeReviewChain(
+	prId: string,
+	installationId: number,
+	owner: string,
+	repo: string
+) {
+	const model = getModelClass();
 
-export async function codeReviewChain(input: string) {}
-
+	const octokit = await getAuthenticatedOctokit(installationId);
+	const pr = await octokit.rest.pulls.get({
+		owner,
+		repo,
+		pull_number: parseInt(prId, 10),
+	});
+}
 
 // async function checking() {
 // 	const res = await model.invoke([
