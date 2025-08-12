@@ -4,6 +4,41 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { OllamaEmbeddings } from "@langchain/ollama";
 
+async function deleteEmbededRepo(
+	installationId: number,
+	owner: string,
+	repoName: string
+) {
+	const embeddingModelName =
+		process.env.EMBEDDING_MODEL || "unclemusclez/jina-embeddings-v2-base-code";
+	const embeddingModelUrl =
+		process.env.EMBEDDING_MODEL_URL || "http://localhost:11434";
+
+	// const vectorDBUrl = process.env.VECTOR_DB_URL || "http://localhost:8000";
+	const vectorDBHost = process.env.VECTOR_DB_HOST || "localhost";
+	const vectorDBPort = process.env.VECTOR_DB_PORT || 8000;
+	const vectorDBSSL =
+		process.env.VECTOR_DB_SSL || vectorDBHost === "localhost" ? false : true;
+	const embeddingModel = new OllamaEmbeddings({
+		model: embeddingModelName,
+		baseUrl: embeddingModelUrl,
+	});
+	const chromaStore = new Chroma(embeddingModel, {
+		clientParams: {
+			host: vectorDBHost,
+			port: vectorDBPort,
+			ssl: vectorDBSSL,
+		},
+	});
+	await chromaStore.delete({
+		filter: {
+			repoId: `${owner}/${repoName}`,
+			installationId: installationId,
+		},
+	});
+	console.log("Delete repo embedding too");
+}
+
 export async function embedRepoChain(
 	installationId: number,
 	owner: string,
@@ -43,8 +78,8 @@ export async function embedRepoChain(
 			ssl: vectorDBSSL,
 		},
 	});
-	const stored = await chromaStore.addDocuments(splitDocs);
-	console.log("chroma store created successfully", stored);
+	await chromaStore.addDocuments(splitDocs);
+	console.log("Repo embedded successfully");
 }
 
 const getTextSplitter = () => {
