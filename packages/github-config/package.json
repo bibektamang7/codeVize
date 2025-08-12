@@ -14,6 +14,8 @@
 	},
 	"dependencies": {
 		"@octokit/webhooks": "^14.1.2",
-		"octokit": "^5.0.3"
+		"octokit": "^5.0.3",
+		"db": "*",
+		"langflows": "*"
 	}
 }
