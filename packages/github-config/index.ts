@@ -2,7 +2,8 @@ import { createNodeMiddleware } from "@octokit/webhooks";
 import { App, Octokit } from "octokit";
 import fs from "fs";
 import { prisma } from "db/prisma";
-import { embedRepoChain } from "../langflows";
+import { embedRepoChain, prCodeReviewChain } from "../langflows";
+import { deleteEmbededRepo } from "langflows/chains/embedRepo";
 
 const GITHUB_APP_ID = process.env.GITHUB_APP_ID;
 const GITHUB_APP_PRIVATE_KEY_PATH = process.env.GITHUB_PRIVATE_KEY;
@@ -20,7 +21,6 @@ const githubApp = new App({
 
 githubApp.webhooks.on("pull_request", async ({ payload }) => {
 	const { owner } = payload.repository;
-	const prNumber = payload.pull_request.number;
 
 	let installationId: number | undefined = undefined;
 
@@ -36,19 +36,12 @@ githubApp.webhooks.on("pull_request", async ({ payload }) => {
 			return;
 		}
 	}
-	const octokit = await getAuthenticatedOctokit(installationId);
-	const diff = await octokit.request(
-		"GET /repos/{owner}/{repo}/pulls/{pull_number}",
-		{
-			owner: owner.login,
-			repo: payload.repository.name,
-			pull_number: prNumber,
-			headers: {
-				accept: "application/vnd.github.v3.diff",
-			},
-		}
+	await prCodeReviewChain(
+		payload.pull_request.id,
+		installationId,
+		owner.name!,
+		payload.repository.name
 	);
-	console.log("PR diff", diff);
 	//TODO: give diff to LLM for review
 });
 
@@ -148,6 +141,11 @@ githubApp.webhooks.on("installation.deleted", async ({ octokit, payload }) => {
 			console.error("Failed to delete repo from database");
 			throw new Error("Failed to delete repo");
 		}
+		await deleteEmbededRepo(
+			Number(installationId),
+			payload.sender.login,
+			payload.repository?.name!
+		);
 
 		console.log("Repo delete from database successfully");
 	} catch (error) {

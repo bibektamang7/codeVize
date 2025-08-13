@@ -2,19 +2,21 @@ import { getModelClass } from "../utils/LLMFactory";
 import { getAuthenticatedOctokit } from "github-config";
 
 export async function prCodeReviewChain(
-	prId: string,
+	prId: number,
 	installationId: number,
 	owner: string,
 	repo: string
 ) {
-	const model = getModelClass();
+	// const model = getModelClass();
+	console.log("yeat same achia aaia here")
 
 	const octokit = await getAuthenticatedOctokit(installationId);
 	const pr = await octokit.rest.pulls.get({
 		owner,
 		repo,
-		pull_number: parseInt(prId, 10),
+		pull_number: prId,
 	});
+	console.log("this is pr", pr.data);
 }
 
 // async function checking() {

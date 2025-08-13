@@ -66,7 +66,7 @@ export default function CodevizeLanding() {
 								</button>
 							</div>
 
-							<h1 className="max-w-[980px] text-[56px] md:text-[72px] lg:text-[86px] leading-[0.98] font-extralight tracking-tight">
+							<h1 className="max-w-[980px] font-semibold text-[56px] md:text-[64px] lg:text-[74px] leading-[1.1] tracking-tight">
 								Smarter Code Reviews,
 								<br />
 								Faster Issue Tagging
@@ -106,9 +106,8 @@ export default function CodevizeLanding() {
 						</div>
 					</div>
 
-					{/* Stats and panels */}
-					<div className="mt-12 px-2 bg-[rgba(255,255,255,0.02)] rounded-[26px] border border-[rgba(255,255,255,0.04)]">
-						<div className="rounded-[26px]  bg-[rgba(0,0,0,0.05)] border border-[rgba(255,255,255,0.03)] p-6 -translate-y-6">
+					<div className="mt-12 px-2">
+						<div className="rounded-[26px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.03)] p-6 -translate-y-6">
 							<div className="grid grid-cols-12 gap-6 items-center">
 								<div className="col-span-4 bg-[rgba(255,255,255,0.01)] rounded-lg p-4">
 									<div className="h-20 rounded-md bg-gradient-to-br from-[rgba(255,255,255,0.02)] to-transparent p-3">

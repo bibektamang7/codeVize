@@ -1,7 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
 import { verifyJWTToken } from "jwt";
-import { prismaClient } from "db/prisma";
-import type { User } from "../global";
+import { prisma, prismaClient } from "db/prisma";
+
+interface DecodedToken {
+	id: string;
+}
 
 export const authMiddleware = async (
 	req: Request,
@@ -16,7 +19,7 @@ export const authMiddleware = async (
 		return;
 	}
 	const tokenDecoded = verifyJWTToken(token);
-	const user = await hasUser(tokenDecoded as User);
+	const user = await hasUser(tokenDecoded as DecodedToken);
 	if (!user) {
 		res.status(403).json({ message: "Unauthorized Request" });
 		return;
@@ -25,19 +28,21 @@ export const authMiddleware = async (
 	next();
 };
 
-const hasUser = async (user: User) => {
+const hasUser = async (decodedToken: DecodedToken) => {
 	try {
-		// const user = prismaClient.user.findUnique({
-		// 	where: {
-		// 		id: user.id,
-		// 	},
-		// });
+		const user = await prisma.user.findUnique({
+			where: { id: decodedToken.id },
+			select: {
+				id: true,
+				plan: true,
+				activeRepos: true,
+			},
+		});
 
-		// if (!user) {
-		// 	return null;
-		// }
-		// return user;
-		return null;
+		if (!user) {
+			return null;
+		}
+		return user;
 	} catch (error) {
 		console.error("Failed to find user", error);
 		return null;

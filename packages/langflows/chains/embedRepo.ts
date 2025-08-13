@@ -4,7 +4,7 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { OllamaEmbeddings } from "@langchain/ollama";
 
-async function deleteEmbededRepo(
+export async function deleteEmbededRepo(
 	installationId: number,
 	owner: string,
 	repoName: string
