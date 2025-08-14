@@ -19,7 +19,17 @@ const githubApp = new App({
 	},
 });
 
-githubApp.webhooks.on("pull_request", async ({ payload }) => {
+githubApp.webhooks.on("pull_request.closed", () => {});
+
+githubApp.webhooks.on("pull_request.edited", ({ octokit, payload }) => {
+	console.log("Pull request changes");
+});
+
+githubApp.webhooks.on("pull_request_review_comment", ({ octokit, payload }) => {
+	console.log("pull request comment created");
+});
+
+githubApp.webhooks.on("pull_request.opened", async ({ payload }) => {
 	const { owner } = payload.repository;
 
 	let installationId: number | undefined = undefined;
