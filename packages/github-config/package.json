@@ -13,9 +13,10 @@
 		"typescript": "^5"
 	},
 	"dependencies": {
+		"@octokit/rest": "^22.0.0",
 		"@octokit/webhooks": "^14.1.2",
-		"octokit": "^5.0.3",
 		"db": "*",
-		"langflows": "*"
+		"langflows": "*",
+		"octokit": "^5.0.3"
 	}
 }

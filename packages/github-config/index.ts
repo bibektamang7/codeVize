@@ -30,6 +30,7 @@ githubApp.webhooks.on("pull_request_review_comment", ({ octokit, payload }) => {
 });
 
 githubApp.webhooks.on("pull_request.opened", async ({ payload }) => {
+	console.log("is this herej or not check it out");
 	const { owner } = payload.repository;
 
 	let installationId: number | undefined = undefined;
@@ -47,9 +48,9 @@ githubApp.webhooks.on("pull_request.opened", async ({ payload }) => {
 		}
 	}
 	await prCodeReviewChain(
-		payload.pull_request.id,
+		payload.number,
 		installationId,
-		owner.name!,
+		owner.login,
 		payload.repository.name
 	);
 	//TODO: give diff to LLM for review
