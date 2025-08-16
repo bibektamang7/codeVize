@@ -16,6 +16,7 @@
 		"@chroma-core/default-embed": "^0.1.8",
 		"@langchain/community": "^0.3.50",
 		"@langchain/core": "^0.3.66",
+		"@langchain/google-genai": "^0.2.16",
 		"@langchain/langgraph": "^0.3.11",
 		"@langchain/ollama": "^0.2.3",
 		"chromadb": "^3.0.11",

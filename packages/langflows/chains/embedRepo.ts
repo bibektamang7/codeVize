@@ -3,22 +3,19 @@ import { GithubRepoLoader } from "@langchain/community/document_loaders/web/gith
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { OllamaEmbeddings } from "@langchain/ollama";
+import {
+	embeddingModelName,
+	embeddingModelUrl,
+	vectorDBHost,
+	vectorDBPort,
+	vectorDBSSL,
+} from "../utils/config";
 
 export async function deleteEmbededRepo(
 	installationId: number,
 	owner: string,
 	repoName: string
 ) {
-	const embeddingModelName =
-		process.env.EMBEDDING_MODEL || "unclemusclez/jina-embeddings-v2-base-code";
-	const embeddingModelUrl =
-		process.env.EMBEDDING_MODEL_URL || "http://localhost:11434";
-
-	// const vectorDBUrl = process.env.VECTOR_DB_URL || "http://localhost:8000";
-	const vectorDBHost = process.env.VECTOR_DB_HOST || "localhost";
-	const vectorDBPort = process.env.VECTOR_DB_PORT || 8000;
-	const vectorDBSSL =
-		process.env.VECTOR_DB_SSL || vectorDBHost === "localhost" ? false : true;
 	const embeddingModel = new OllamaEmbeddings({
 		model: embeddingModelName,
 		baseUrl: embeddingModelUrl,

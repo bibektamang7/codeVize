@@ -7,7 +7,3 @@ export interface ModelResponse {
 	aiScore: number;
 }
 
-export abstract class BaseModel {
-	abstract codeReviewChain(input: string): Promise<void>;
-	abstract embedRepoChain(): Promise<void>;
-}
