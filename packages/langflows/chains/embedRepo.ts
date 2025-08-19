@@ -16,24 +16,25 @@ export async function deleteEmbededRepo(
 	owner: string,
 	repoName: string
 ) {
-	const embeddingModel = new OllamaEmbeddings({
-		model: embeddingModelName,
-		baseUrl: embeddingModelUrl,
-	});
-	const chromaStore = new Chroma(embeddingModel, {
-		clientParams: {
-			host: vectorDBHost,
-			port: vectorDBPort,
-			ssl: vectorDBSSL,
-		},
-	});
-	await chromaStore.delete({
-		filter: {
-			repoId: `${owner}/${repoName}`,
-			installationId: installationId,
-		},
-	});
-	console.log("Delete repo embedding too");
+	console.log("yeat aayo you paxi here ram la");
+	// const embeddingModel = new OllamaEmbeddings({
+	// 	model: embeddingModelName,
+	// 	baseUrl: embeddingModelUrl,
+	// });
+	// const chromaStore = new Chroma(embeddingModel, {
+	// 	clientParams: {
+	// 		host: vectorDBHost,
+	// 		port: vectorDBPort,
+	// 		ssl: vectorDBSSL,
+	// 	},
+	// });
+	// await chromaStore.delete({
+	// 	filter: {
+	// 		repoId: `${owner}/${repoName}`,
+	// 		installationId: installationId,
+	// 	},
+	// });
+	// console.log("Delete repo embedding too");
 }
 
 export async function embedRepoChain(

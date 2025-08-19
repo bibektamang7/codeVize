@@ -3,7 +3,7 @@ import { OllamaEmbeddings } from "@langchain/ollama";
 import { ChromaClient } from "chromadb";
 import type { Document } from "langchain/document";
 
-import type { PullRequestGraphState } from "./graph";
+import { PullRequestGraphState } from "./graph";
 import { getAuthenticatedOctokit } from "github-config";
 
 export const retrieveWithParents = async (options: {
@@ -70,3 +70,7 @@ export const retrievePRContent = async ({
 	);
 	targetBranchDiff.data.files;
 };
+
+export const retrieveContextFromVectorDB = async ({
+	State,
+}: typeof PullRequestGraphState) => {};

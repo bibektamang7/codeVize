@@ -8,3 +8,5 @@ export const vectorDBHost = process.env.VECTOR_DB_HOST || "localhost";
 export const vectorDBPort = process.env.VECTOR_DB_PORT || 8000;
 export const vectorDBSSL =
 	process.env.VECTOR_DB_SSL || vectorDBHost === "localhost" ? false : true;
+
+export const gemini_api_key = process.env.GEMINI_API_KEY;
