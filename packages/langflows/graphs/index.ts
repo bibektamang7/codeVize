@@ -1,7 +1,16 @@
 import { END, START } from "@langchain/langgraph";
 import { workflow } from "./graph";
 
-export const runGraphForPR = async () => {
+interface GraphInitialStateProps {
+	owner: string;
+	repo: string;
+	prNumber: number;
+	installationId: number;
+}
+
+export const runGraphForPR = async (
+	graphInitialState: GraphInitialStateProps
+) => {
 	workflow.addEdge(START, "retrievePRContent");
 	workflow.addEdge("retrievePRContent", "retrieveContextFromVectorDb");
 	workflow.addEdge("retrieveContextFromVectorDb", "rawPRFilesSummarize");
@@ -16,5 +25,7 @@ export const runGraphForPR = async () => {
 	);
 	workflow.addEdge("checkBugsOrImprovement", "publishSuggestion");
 	workflow.addEdge("publishSuggestion", END);
-	// const app = workflow.compile()
+	const app = workflow.compile();
+
+	app.invoke(graphInitialState);
 };
