@@ -4,6 +4,7 @@ import fs from "fs";
 import { prisma } from "db/prisma";
 import { embedRepoChain, prCodeReviewChain } from "../langflows";
 import { deleteEmbededRepo } from "langflows/chains/embedRepo";
+import type { Endpoints } from "@octokit/types";
 
 const GITHUB_APP_ID = process.env.GITHUB_APP_ID;
 const GITHUB_APP_PRIVATE_KEY_PATH = process.env.GITHUB_PRIVATE_KEY;
@@ -18,6 +19,9 @@ const githubApp = new App({
 		secret: GITHUB_APP_WEBHOOK_SECRET!,
 	},
 });
+
+githubApp.octokit.rest.pulls.get;
+// githubApp.octokit.pu;
 
 githubApp.webhooks.on("pull_request.closed", () => {});
 
@@ -59,8 +63,10 @@ githubApp.webhooks.on("pull_request.opened", async ({ payload }) => {
 githubApp.webhooks.on(
 	"installation.created",
 	async ({ id, octokit, name, payload }) => {
+		console.log("is this here nowj");
 		const installationId = payload.installation.id.toString();
 		const githubAccountId = payload.installation.account?.id.toString();
+		console.log("this is githubaccoutn id", githubAccountId);
 		if (!githubAccountId) return;
 		// const user = await prisma.user.findUnique({
 		// 	where: { githubId: githubAccountId },
@@ -73,6 +79,11 @@ githubApp.webhooks.on(
 
 		try {
 			const repos = await octokit.rest.apps.listReposAccessibleToInstallation();
+			console.log(
+				"this is installation id and repo length",
+				installationId,
+				repos.data.repositories.length
+			);
 			if (!installationId || repos.data.repositories.length === 0) return;
 			//TODO: Handle empty repo
 			await embedRepoChain(
@@ -201,3 +212,9 @@ export {
 	createNodeMiddleware,
 	getAuthenticatedInstallationId,
 };
+
+export type PullRequestFiles =
+	Endpoints["GET /repos/{owner}/{repo}/compare/{base}...{head}"]["response"]["data"]["files"];
+
+export type Commits =
+	Endpoints["GET /repos/{owner}/{repo}/compare/{base}...{head}"]["response"]["data"]["commits"];
