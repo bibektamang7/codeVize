@@ -23,3 +23,7 @@ export const EXCLUDE_DIRS = new Set([
 	".next",
 	".cache",
 ]);
+
+export const checkPathFilter = (path: string): boolean => {
+	return true;
+};

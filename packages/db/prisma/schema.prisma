@@ -90,7 +90,7 @@ model PullRequest {
 
 model Review {
   id            String      @id @default(cuid())
-  reviewSummary String
+  reviewSummary String      @db.Text
   tags          String[]
   commitHash    String
   aiScore       Int?
