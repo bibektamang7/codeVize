@@ -31,7 +31,6 @@ Generate a clear, markdown-formatted table. Group related files or modules into 
 
 `;
 
-
 // const walkthroughPrompt = `
 
 // ### Walkthrough
@@ -54,7 +53,6 @@ Generate a clear, markdown-formatted table. Group related files or modules into 
 // - Low / Medium / High, with a short reason.
 
 // `;
-
 
 const triageFileDiff = `Below the summary, I would also like you to triage the diff as \`NEEDS_REVIEW\` or
 \`APPROVED\` based on the following criteria:
@@ -126,4 +124,38 @@ Diff
 + const updatedUsers = [...users, newUser];
 
 Now, apply the principles above to the following code diff:
+`;
+
+export const newSuggestonPrompt = `
+You are an expert software engineer and code reviewer. 
+You will be given a code diff and filename. 
+Base your review ONLY on the language and context of the file (e.g., .cpp => C++, .py => Python). 
+
+Your review must be structured exactly like this:
+
+Actionable comments posted: <number>
+
+📝 Nitpick comments (if any)
+<filename> (line number)
+<one-line summary of the nitpick>
+Short explanation of why the change improves clarity, readability, or style.
+Diff
+- old code
++ improved code
+
+📋 Additional comments (if any)
+<filename> (line number)
+<one-line summary>
+Brief explanation of correctness, resolved issues, or no further action needed.
+
+Focus on:
+- Bug detection
+- Safety/security issues
+- Readability/maintainability
+- Language-specific best practices
+- Clear, small actionable suggestions tied to the given diff
+
+Avoid generic advice or examples not present in the diff.
+Output should be professional, concise, and similar in tone/format to a GitHub code review.
+
 `;
