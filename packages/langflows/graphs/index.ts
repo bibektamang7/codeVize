@@ -11,20 +11,17 @@ interface GraphInitialStateProps {
 export const runGraphForPR = async (
 	graphInitialState: GraphInitialStateProps
 ) => {
+	console.log("THis is in run graph for pr");
 	workflow.addEdge(START, "retrievePRContent");
-	workflow.addEdge("retrievePRContent", "retrieveContextFromVectorDb");
-	workflow.addEdge("retrieveContextFromVectorDb", "rawPRFilesSummarize");
-	workflow.addEdge("rawPRFilesSummarize", "tabularPRFilesSummarize");
-	workflow.addEdge("tabularPRFilesSummarize", "publishSummary");
-	workflow.addEdge("publishSummary", "checkBugsOrImprovement");
+	workflow.addEdge("retrievePRContent", "tabularPRFilesSummarize");
+	workflow.addEdge("tabularPRFilesSummarize", "checkBugsOrImprovement");
 	workflow.addConditionalEdges(
 		"checkBugsOrImprovement",
 		function shouldPublish(): string {
 			return END;
 		}
 	);
-	workflow.addEdge("checkBugsOrImprovement", "publishSuggestion");
-	workflow.addEdge("publishSuggestion", END);
+	workflow.addEdge("checkBugsOrImprovement", END);
 	const app = workflow.compile();
 
 	app.invoke(graphInitialState);
