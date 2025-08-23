@@ -1,17 +1,12 @@
 import { PullRequestGraphState } from "./graph";
 import { walkThroughPrompt } from "../prompts/reviewPrompt";
 import { getCodeSummarizationModel } from "../utils/codeSummarizationLLMFactory";
-import { SystemMessage } from "@langchain/core/messages";
-import { getAuthenticatedOctokit } from "github-config";
 
-export const rawPRDiffSummary = async ({
-	State,
-}: typeof PullRequestGraphState) => {};
-
-export const tabularPRDiffSummary = async ({
-	State,
-}: typeof PullRequestGraphState) => {
+export const tabularPRDiffSummary = async (
+	State: typeof PullRequestGraphState.State
+) => {
 	const filteredFiles = State.unReviewedFiles;
+	console.log("this is file to review", State.unReviewedFiles);
 	if (!filteredFiles || filteredFiles.length === 0) {
 		console.warn("Skipped: No files to review");
 		return;
@@ -44,7 +39,13 @@ $file_diff
 				content: fullSummaryPrompt,
 			},
 		]);
-		console.log(summarizationResponse.content);
+
+		console.log("this is prompt", fullSummaryPrompt.slice(0, 20));
+		console.log(
+			"this is reponse from llm",
+			summarizationResponse.text,
+			summarizationResponse.concat
+		);
 
 		//TODO: submit summary to GITHUB
 		// const octokit = await getAuthenticatedOctokit(State.installationId);
@@ -64,5 +65,9 @@ $file_diff
 };
 
 export const publishSummary = async ({
+	State,
+}: typeof PullRequestGraphState) => {};
+
+export const rawPRDiffSummary = async ({
 	State,
 }: typeof PullRequestGraphState) => {};

@@ -24,23 +24,66 @@ export const retrieveWithParents = async (options: {
 	kPerQuery?: number;
 	maxParents?: number;
 	neighbours?: number;
+	owner: string;
+	repo: string;
+	installationId: number;
 }) => {
-	const { query, kPerQuery = 6, maxParents = 10 } = options;
+	const {
+		query,
+		kPerQuery = 6,
+		maxParents = 10,
+		installationId,
+		owner,
+		repo,
+	} = options;
+	console.log("this is here i know now");
 	const chromaClient = new ChromaClient({
 		host: "localhost",
 		port: 8000,
 		ssl: false,
 	});
-	const vectorStore = new Chroma(
-		new OllamaEmbeddings({
-			model: "",
-			baseUrl: "",
-		}),
+	// const vectorStore = new Chroma(
+	// 	new OllamaEmbeddings({
+	// 		model: "",
+	// 		baseUrl: "",
+	// 	}),
+	// 	{
+	// 		collectionName: "",
+	// 	}
+	// );
+
+	const embeddingModel = new OllamaEmbeddings({
+		model: embeddingModelName,
+		baseUrl: embeddingModelUrl,
+	});
+
+	const queryEmbeded = await embeddingModel.embedDocuments([query]);
+
+	const chromaStore = new Chroma(embeddingModel, {
+		collectionName: "repo_embeddings",
+		collectionMetadata: {
+			installationId: installationId,
+			repoId: `${owner}/${repo}`,
+		},
+		clientParams: {
+			host: vectorDBHost,
+			port: vectorDBPort,
+			ssl: vectorDBSSL,
+		},
+	});
+	console.log("is this seach comeher and so do");
+	// const hits = await chromaStore.similaritySearch(query, kPerQuery);
+	const result = await chromaStore.similaritySearchVectorWithScore(
+		//@ts-ignore
+		queryEmbeded,
+		kPerQuery,
 		{
-			collectionName: "",
+			// installationId: { $eq: installationId },
+			repoId: { $eq: `${owner}/${repo}` },
 		}
 	);
-	const hits = await vectorStore.similaritySearch(query, kPerQuery);
+	const hits = result.map((result) => result[0]);
+	console.log("this is hits", hits);
 	const byParent = new Map<string, Document[]>();
 	for (const h of hits) {
 		const parentId = h.metadata.parentId;
@@ -61,9 +104,9 @@ export const retrieveWithParents = async (options: {
 	return expanded;
 };
 
-export const retrievePRContent = async ({
-	State,
-}: typeof PullRequestGraphState) => {
+export const retrievePRContent = async (
+	State: typeof PullRequestGraphState.State
+) => {
 	const octokit = await getAuthenticatedOctokit(State.installationId);
 
 	const pr = await octokit.rest.pulls.get({
@@ -76,17 +119,17 @@ export const retrievePRContent = async ({
 		"GET /repos/{owner}/{repo}/compare/{base}...{head}",
 		{
 			owner: State.owner,
-			repo: State.owner,
+			repo: State.repo,
 			base: pr.data.base.sha,
 			head: pr.data.head.sha,
 		}
 	);
 
-	console.log("This is targed branch file", targetBranchDiff.data.files);
-	console.log(
-		"This is changed files data",
-		targetBranchDiff.data.files?.map((file) => file.patch)
-	);
+	// console.log("This is targed branch file", targetBranchDiff.data.files);
+	// console.log(
+	// 	"This is changed files data",
+	// 	targetBranchDiff.data.files?.map((file) => file.patch)
+	// );
 
 	let highestReviewedCommitId: string | undefined;
 
@@ -156,29 +199,30 @@ export const retrievePRContent = async ({
 
 	const incrementalFiles = incrementalDiff.data.files || [];
 	const targetBranchFiles = targetBranchDiff.data.files;
-	if (!targetBranchFiles) {
+	if (!targetBranchFiles || targetBranchFiles.length === 0) {
 		console.log("Skipped: files data is missing");
 		return;
 	}
-	const unReviewedfiles = targetBranchFiles.filter((targetBranchFile) => {
-		incrementalFiles.some((incrementalFile) => {
-			incrementalFile.filename === targetBranchFile.filename;
-		});
+	const files = targetBranchFiles.filter((targetBranchFile) => {
+		return incrementalFiles.some(
+			(incrementalFile) =>
+				incrementalFile.filename === targetBranchFile.filename
+		);
 	});
-
-	if (unReviewedfiles.length === 0) {
+	console.log("this is files after filter", files);
+	if (files.length === 0) {
 		console.log("Skipped: files is null");
 		return;
 	}
 
-	if (unReviewedfiles.length === 0) {
+	if (files.length === 0) {
 		console.log("Skipped: files is null");
 		return;
 	}
 	const filterSelectedFiles = [];
 	const filterIgnoredFiles = [];
 
-	for (const file of unReviewedfiles) {
+	for (const file of files) {
 		if (checkPathFilter(file.filename)) {
 			filterSelectedFiles.push(file);
 		} else {
@@ -190,7 +234,10 @@ export const retrievePRContent = async ({
 		console.log("Skipped: filteredSelectedFiles is null");
 		return;
 	}
-	State.unReviewedFiles = filterSelectedFiles;
+	// State.unReviewedFiles = filterSelectedFiles;
+	return {
+		unReviewedFiles: filterSelectedFiles,
+	};
 };
 
 export const retrieveContextFromVectorDB = async ({
