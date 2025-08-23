@@ -32,6 +32,4 @@ export const PullRequestGraphState = Annotation.Root({
 export const workflow = new StateGraph(PullRequestGraphState)
 	.addNode("retrievePRContent", retrievePRContent)
 	.addNode("tabularPRFilesSummarize", tabularPRDiffSummary)
-	.addNode("publishSummary", publishSummary)
-	.addNode("checkBugsOrImprovement", checkBugsOrImprovement)
-	.addNode("publishSuggestion", publishSuggestion);
+	.addNode("checkBugsOrImprovement", checkBugsOrImprovement);
