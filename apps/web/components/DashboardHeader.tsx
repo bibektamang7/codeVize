@@ -2,6 +2,13 @@ import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { Code } from "lucide-react";
+import {
+	DropdownMenu,
+	DropdownMenuLabel,
+	DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { DropdownMenuContent } from "@radix-ui/react-dropdown-menu";
 
 const dashboardNavLists = [
 	{
@@ -30,23 +37,32 @@ const DashboardHeader = () => {
 						</AvatarFallback>
 					</Avatar>
 					<span className="text-lg font-medium">codevize's projects</span>
+					<DropdownMenu>
+						<DropdownMenuTrigger>
+							<Code
+								className="rotate-90"
+								size={14}
+							/>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent className="bg-gray-400 mt-4 px-12">
+							<DropdownMenuLabel>My account</DropdownMenuLabel>
+							<DropdownMenuLabel>Upgrage</DropdownMenuLabel>
+							<DropdownMenuLabel>Logout</DropdownMenuLabel>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 
 				<div className="flex items-center gap-4">
 					<nav className="border-b border-gray-800 bg-black">
 						<div className="flex items-center px-6">
 							{dashboardNavLists.map((list, index) => (
-								<Link
+								<Button
 									key={list.title}
-									href={list.redirectTo}
-									className={`px-4 py-3 text-sm rounded-none border-b-2 ${
-										index === 0
-											? "border-white text-white"
-											: "border-transparent text-gray-400 hover:text-white"
-									}`}
+									variant={"ghost"}
+									className={` px-4 py-3 text-sm rounded-md border-b-2 ${"border-transparent text-gray-400 hover:bg-indigo-500 hover:text-white"}`}
 								>
-									<Button variant={"ghost"}>{list.title}</Button>
-								</Link>
+									<Link href={list.redirectTo}>{list.title}</Link>
+								</Button>
 							))}
 						</div>
 					</nav>

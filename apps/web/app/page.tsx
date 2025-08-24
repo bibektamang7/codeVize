@@ -18,13 +18,15 @@
 // 	);
 // }
 
+import Features from "@/components/Features";
 import Landing from "@/pages/Landing";
 import React from "react";
 
 const Home = () => {
 	return (
-		<div className="">
+		<div className="dark">
 			<Landing />
+			<Features/>
 		</div>
 	);
 };
