@@ -1,7 +1,9 @@
+import EmptyIssue from "@/pages/EmptyIssue";
 import React from "react";
 
 const IssuePage = () => {
-	return <div> IssuePage</div>;
+	const issues = [];
+	return <div>{issues.length !== 0 ? <div></div> : <EmptyIssue />}</div>;
 };
 
 export default IssuePage;
