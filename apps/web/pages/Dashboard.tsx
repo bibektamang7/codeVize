@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -23,7 +22,6 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import RecentPullRequests from "@/components/RecentReviews";
 
 const Dashboard = () => {
 	const projects = [
@@ -63,45 +61,6 @@ const Dashboard = () => {
 
 	return (
 		<div className="min-h-screen bg-black text-white">
-			<header className="border-b border-gray-800 bg-black">
-				<div className="flex items-center justify-between px-6 py-3">
-					<div className="flex items-center gap-2">
-						<Avatar className="w-6 h-6">
-							<AvatarImage src="/placeholder.svg?height=24&width=24" />
-							<AvatarFallback className="bg-purple-600 text-xs">
-								CR
-							</AvatarFallback>
-						</Avatar>
-						<span className="text-sm font-medium">codevize's projects</span>
-					</div>
-
-					<div className="flex items-center gap-4">
-						<nav className="border-b border-gray-800 bg-black">
-							<div className="flex items-center px-6">
-								{["Overview", "Reviews", "Issues", "Settings"].map(
-									(item, index) => (
-										<Button
-											key={item}
-											variant="ghost"
-											className={`px-4 py-3 text-sm rounded-none border-b-2 ${
-												index === 0
-													? "border-white text-white"
-													: "border-transparent text-gray-400 hover:text-white"
-											}`}
-										>
-											{item}
-										</Button>
-									)
-								)}
-							</div>
-						</nav>
-						<Avatar className="w-8 h-8">
-							<AvatarImage src="/placeholder.svg?height=32&width=32" />
-							<AvatarFallback className="bg-green-600">CR</AvatarFallback>
-						</Avatar>
-					</div>
-				</div>
-			</header>
 
 			<div className="flex">
 				<aside className="w-80 border-r border-gray-800 bg-black p-6">
@@ -115,6 +74,28 @@ const Dashboard = () => {
 								</p>
 							</CardContent>
 						</Card>
+					</div>
+					<div className="bg-[#2a2a2a] rounded-xl p-4 shadow-lg mt-4">
+						<div className="flex justify-between items-center mb-4">
+							<h3 className="text-lg font-semibold text-white">Token Usage</h3>
+							<button className="text-xs bg-gray-600 text-white px-2 py-1 rounded-full hover:bg-gray-700">
+								Upgrade
+							</button>
+						</div>
+						<div className="text-center mb-4">
+							<p className="text-xs text-gray-400">Used</p>
+							<p className="text-3xl font-bold text-white">35,000</p>
+							<p className="text-sm text-gray-500">of 100,000 tokens</p>
+						</div>
+						<div className="w-full bg-[#3e3e3e] rounded-full h-2.5 mb-2">
+							<div
+								className="bg-green-500 h-2.5 rounded-full"
+								style={{ width: "35%" }}
+							></div>
+						</div>
+						<p className="text-xs text-gray-500 text-center">
+							Your limit will reset in 10 days.
+						</p>
 					</div>
 				</aside>
 
@@ -229,7 +210,6 @@ const Dashboard = () => {
 							))}
 						</div>
 					</div>
-					<RecentPullRequests/>
 				</main>
 			</div>
 		</div>

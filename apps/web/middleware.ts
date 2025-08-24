@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "./app/api/auth/[...nextauth]/auth";
 
 async function middleware(req: NextRequest) {
-	const session = await auth();
+	// const session = await auth();
 	const path = req.nextUrl.pathname;
 
 	// const isPublicPath = path === "/login" || path === "/signup";
@@ -18,7 +18,7 @@ async function middleware(req: NextRequest) {
 }
 
 export const config = {
-	matcher: ["/login", "/signup", "/dashboard"],
+	matcher: ["/login", "/signup", "/dashboard", "/"],
 };
 
 export default middleware;

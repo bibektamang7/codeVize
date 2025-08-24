@@ -17,9 +17,7 @@ import React from "react";
 export default function CodevizeLanding() {
 	return (
 		<div className="min-h-screen bg-black p-8 text-white flex items-center justify-center">
-			{/* Container */}
 			<div className="w-full max-w-[1300px] rounded-[28px] bg-[rgba(255,255,255,0.02)] backdrop-blur-md border border-[rgba(255,255,255,0.04)] overflow-hidden shadow-2xl">
-				{/* Top bar */}
 				<header className="flex items-center justify-between px-8 py-6">
 					<div className="flex items-center gap-4">
 						{/* <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shadow-md"></div> */}
@@ -39,14 +37,15 @@ export default function CodevizeLanding() {
 					</nav>
 
 					<div className="hidden md:flex items-center gap-3">
-						<Button className="text-sm opacity-80 bg-inherit">Login</Button>
-						<Button className="px-4 py-1 rounded-full bg-inherit  border border-[rgba(255,255,255,0.12)] text-sm">
+						<Button className="text-sm opacity-80 bg-inherit hover:cursor-pointer">
+							Login
+						</Button>
+						<Button className="hover:cursor-pointer px-4 py-1 rounded-full bg-inherit  border border-[rgba(255,255,255,0.12)] text-sm">
 							Sign Up
 						</Button>
 					</div>
 				</header>
 
-				{/* Hero section */}
 				<section className="px-12 pb-10 relative">
 					<div
 						className="absolute -top-24 left-1/2 transform -translate-x-1/2 w-[420px] h-[300px] pointer-events-none"
@@ -79,8 +78,15 @@ export default function CodevizeLanding() {
 							</p>
 
 							<div className="mt-8 flex items-center gap-4">
-								<div className="rounded-full bg-[rgba(255,255,255,0.02)] px-6 py-3 flex items-center gap-4 border border-[rgba(255,255,255,0.04)]">
-									<svg
+								{/* <div className="rounded-full bg-[rgba(255,255,255,0.02)] px-6 py-3 flex items-center gap-4 border border-[rgba(255,255,255,0.04)]">
+									<input
+										className="bg-transparent outline-none text-sm w-[420px] placeholder:opacity-60"
+										placeholder="Enter GitHub Repo URL"
+									/>
+								</div> */}
+								<Button>Book a Demo</Button>
+
+								{/* <svg
 										className="opacity-80"
 										width="18"
 										height="18"
@@ -93,15 +99,10 @@ export default function CodevizeLanding() {
 											strokeWidth="1.5"
 											strokeLinecap="round"
 										/>
-									</svg>
-									<input
-										className="bg-transparent outline-none text-sm w-[420px] placeholder:opacity-60"
-										placeholder="Enter GitHub Repo URL"
-									/>
-								</div>
-								<button className="rounded-full bg-white text-black px-6 py-3 font-medium shadow-[0_8px_24px_rgba(99,102,241,0.2)]">
+									</svg> */}
+								<Button className="rounded-full bg-white text-black px-6 py-3 font-medium shadow-[0_8px_24px_rgba(99,102,241,0.2)]">
 									Analyze Now
-								</button>
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -151,7 +152,6 @@ export default function CodevizeLanding() {
 					</div>
 				</section>
 
-				{/* Bottom panel */}
 				<div className="px-8 pb-10">
 					<div className="mt-6 rounded-[28px] bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] p-6 border border-[rgba(255,255,255,0.03)]">
 						<div className="grid grid-cols-3 gap-6">
@@ -192,7 +192,6 @@ export default function CodevizeLanding() {
 				</div>
 			</div>
 
-			{/* vignette */}
 			<div className="pointer-events-none fixed inset-0 -z-10">
 				<div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#0d1420,transparent_35%)] opacity-40" />
 				<div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#182c3a,transparent_25%)] mix-blend-overlay opacity-30" />
