@@ -15,4 +15,5 @@ export async function prCodeReviewChain(
 		pull_number: prId,
 	});
 	await runGraphForPR({ installationId, owner, prNumber: prId, repo });
+	console.log("is the graph chain ended");
 }

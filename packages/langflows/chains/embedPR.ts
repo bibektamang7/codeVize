@@ -32,6 +32,11 @@ export const embedPullRequest = async (
 		baseUrl: embeddingModelUrl,
 	});
 	const chromaStore = new Chroma(embeddingModel, {
+		collectionName: "repo_embeddings",
+		collectionMetadata: {
+			installationId: installationId,
+			repoId: `${owner}/${repo}`,
+		},
 		clientParams: {
 			host: vectorDBHost,
 			port: vectorDBPort,
