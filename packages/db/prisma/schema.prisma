@@ -66,7 +66,6 @@ model Repo {
   // FOR NOW ONLY, to get language, you can get it from the URL on installation
   languages      String[]
   installationId String
-  isInstalled    Boolean       @default(false)
   isActive       Boolean       @default(false)
   User           User          @relation(fields: [userId], references: [id])
   userId         String
@@ -82,7 +81,7 @@ model PullRequest {
   title      String
   commitHash String
   state      String
-  createAt   DateTime @default(now())
+  createdAt   DateTime @default(now())
   Repo       Repo     @relation(fields: [repoId], references: [id])
   repoId     String
   reviews    Review[]
@@ -92,7 +91,6 @@ model Review {
   id            String      @id @default(cuid())
   reviewSummary String      @db.Text
   tags          String[]
-  commitHash    String
   aiScore       Int?
   createdAt     DateTime    @default(now())
   PullRequest   PullRequest @relation(fields: [pullRequestId], references: [id])
