@@ -195,7 +195,6 @@ export const retrievePRContent = async (
 		console.log("Skipped: commits is null");
 		return;
 	}
-	State.commits = commits;
 
 	const incrementalFiles = incrementalDiff.data.files || [];
 	const targetBranchFiles = targetBranchDiff.data.files;
@@ -237,6 +236,7 @@ export const retrievePRContent = async (
 	// State.unReviewedFiles = filterSelectedFiles;
 	return {
 		unReviewedFiles: filterSelectedFiles,
+		commits: commits,
 	};
 };
 

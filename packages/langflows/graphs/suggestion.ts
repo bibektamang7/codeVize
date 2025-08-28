@@ -3,18 +3,25 @@ import type { PullRequestGraphState } from "./graph";
 import {
 	// codeSuggestionPrompt,
 	newSuggestonPrompt,
+	reviewPrompt,
+	suggestionSystemPrompt,
 } from "../prompts/reviewPrompt";
 import { getAuthenticatedOctokit } from "github-config";
 import { extractDiffHunks, retrieveWithParents } from "./retriever";
 import { Document } from "langchain/document";
-import { Command } from "@langchain/langgraph";
 
 //TODO: rename function name
+interface ReviewComment {
+	path: string;
+	body: string;
+	line: number;
+	start_line?: number;
+}
+
 export const checkBugsOrImprovement = async (
 	State: typeof PullRequestGraphState.State
 ) => {
-	console.log("This is in checkBugs or improvement");
-	// const reviews: { file: string; suggestions: string }[] = [];
+	const comments: ReviewComment[] = [];
 	const filterSelectedFiles = State.unReviewedFiles;
 	if (!filterSelectedFiles || filterSelectedFiles.length === 0) {
 		console.error("Filter selected files is empty");
@@ -22,11 +29,8 @@ export const checkBugsOrImprovement = async (
 	}
 
 	let failedHunks = [];
-	console.log("is this here one where");
 	for (const file of filterSelectedFiles) {
 		if (!file.patch) continue;
-
-		console.log("this is patch", file.patch.length);
 
 		const hunks = extractDiffHunks(file.patch, file.filename);
 		console.log("this hunks", hunks);
@@ -34,8 +38,8 @@ export const checkBugsOrImprovement = async (
 		for (const hunk of hunks) {
 			const query = hunk.added.join("\n") || hunk.removed.join("\n");
 
-			console.log("this is query", query);
-			const relatedDocs: Document[] = await retrieveWithParents({
+			// Assuming `retrieveWithParents` returns a proper context
+			const relatedDocs = await retrieveWithParents({
 				query,
 				kPerQuery: 5,
 				maxParents: 3,
@@ -43,54 +47,81 @@ export const checkBugsOrImprovement = async (
 				owner: State.owner,
 				installationId: State.installationId,
 			});
-			console.log(relatedDocs[0]?.metadata, "this is metadata");
-			console.log(relatedDocs[0]?.pageContent, "this is pageContent");
 
 			const prompt = `
-				File: ${hunk.filePath}	
-				changed code:
-				${hunk.code}
+                File: ${hunk.filePath}    
+                changed code:
+                ${hunk.code}
 
-				Relevant repo context: 
-				${relatedDocs.map((d) => `Source: ${d.metadata.source}\n${d.pageContent}`).join("\n\n")}
+                Relevant repo context:
+                ${relatedDocs.map((d) => `Source: ${d.metadata.source}\n${d.pageContent}`).join("\n\n")}
+**Review the code above and provide a concise, actionable inline comment. Your response MUST follow this format:**
 
-			`;
+**[Emoji] [Category]**
+[Your brief explanation of the issue.]
+
+\`\`\`diff
+[Suggested code changes here]
+\`\`\`
+            `;
 			try {
 				const suggestionModel = getCodeSuggestionModel();
-				console.log("you shoudl be ehre to");
 				const suggestionResponse = await suggestionModel.invoke([
 					{
 						role: "system",
-						content: newSuggestonPrompt,
+						content: suggestionSystemPrompt,
 					},
 					{
 						role: "user",
 						content: prompt,
 					},
 				]);
-				console.log("this is suggestion response", suggestionResponse.content);
+				console.log("this is suggestion response", suggestionResponse.text);
+
+				// --- ADDED LOGIC ---
+				// Parse the hunk header to get the starting line number for the comment
+				// The hunk header is like "@@ -1,4 +1,4 @@"
+				const headerMatch = hunk.header.match(/@@ -\d+,\d+ \+(\d+),\d+ @@/);
+				if (headerMatch && suggestionResponse.text) {
+					const startLine = parseInt(headerMatch[1]!, 10);
+					comments.push({
+						path: hunk.filePath,
+						body: suggestionResponse.text,
+						line: startLine,
+					});
+				}
 			} catch (error) {
 				failedHunks.push(hunk);
 				console.error("failed to get suggestion", error);
 			}
 		}
-		console.log("is this here");
-		return {};
-		// try {
-		// 	const octokit = await getAuthenticatedOctokit(State.installationId);
-		// 	// const submitReview = await octokit.request("")
-		// 	await octokit.rest.pulls.createReview({
-		// 		owner: State.owner,
-		// 		repo: State.repo,
-		// 		pull_number: State.prNumber,
-		// 		commit_id: State.commits[State.commits.length - 1]?.sha,
-		// 		event: "COMMENT",
-		// 		body: "",
-		// 	});
-		// } catch (error) {
-		// 	console.error("Failed while dealing with submitting review");
-		// }
 	}
+
+	// --- ADDED LOGIC ---
+	// Post all collected comments in a single review
+	console.log("this is comments", comments);
+	if (comments.length > 0) {
+		console.log(
+			"THis is commits",
+			State.commits.length,
+			State.commits[State.commits.length - 1]?.sha
+		);
+		try {
+			const octokit = await getAuthenticatedOctokit(State.installationId);
+			await octokit.rest.pulls.createReview({
+				owner: State.owner,
+				repo: State.repo,
+				pull_number: State.prNumber,
+				commit_id: State.commits[State.commits.length - 1]?.sha,
+				event: "COMMENT", // Post as a comment review
+				comments: comments, // Provide the array of collected comments
+			});
+			console.log("Successfully posted all review comments.");
+		} catch (error) {
+			console.error("Failed to submit review comments to GitHub", error);
+		}
+	}
+	return {};
 };
 
 export const publishSuggestion = async ({
