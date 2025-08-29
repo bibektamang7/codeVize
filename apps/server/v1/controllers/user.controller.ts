@@ -35,7 +35,7 @@ export const getAllRepositories = async (req: Request, res: Response) => {
 			res.status(400).json({ message: "No repositories found" });
 			return;
 		}
-		res.status(200).json(repositories);
+		res.status(200).json({ repositories });
 		return;
 	} catch (error) {
 		console.error("Failed to retrieve repositories", error);

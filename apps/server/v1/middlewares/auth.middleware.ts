@@ -18,6 +18,7 @@ export const authMiddleware = async (
 	if (!token) {
 		return;
 	}
+	console.log("token", token)
 	const tokenDecoded = verifyJWTToken(token);
 	const user = await hasUser(tokenDecoded as DecodedToken);
 	if (!user) {
