@@ -49,21 +49,22 @@ export const checkBugsOrImprovement = async (
 			});
 
 			const prompt = `
-                File: ${hunk.filePath}    
-                changed code:
-                ${hunk.code}
+File: ${hunk.filePath}
+changed code:
+${hunk.code}
 
-                Relevant repo context:
-                ${relatedDocs.map((d) => `Source: ${d.metadata.source}\n${d.pageContent}`).join("\n\n")}
-**Review the code above and provide a concise, actionable inline comment. Your response MUST follow this format:**
+Relevant repo context:
+${relatedDocs.map((d) => `Source: ${d.metadata.source}\n${d.pageContent}`).join("\n\n")}
 
-**[Emoji] [Category]**
+Review the code above and provide a concise, actionable inline comment. Your response MUST follow this format, including the emoji, category, explanation, and diff block with suggested changes:
+
+[Emoji] [Category]
 [Your brief explanation of the issue.]
 
 \`\`\`diff
 [Suggested code changes here]
 \`\`\`
-            `;
+`;
 			try {
 				const suggestionModel = getCodeSuggestionModel();
 				const suggestionResponse = await suggestionModel.invoke([
