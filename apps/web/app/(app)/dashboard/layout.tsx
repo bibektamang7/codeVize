@@ -5,7 +5,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
 	return (
-		<section className="bg-black text-white min-h-screen">
+		<section className="bg-black text-white min-h-screen w-max-screen w-full overflow-hidden relative">
 			<DashboardHeader />
 			{children}
 		</section>

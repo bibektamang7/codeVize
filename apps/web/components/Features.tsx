@@ -9,6 +9,7 @@ import {
 	Workflow,
 } from "lucide-react";
 import { BentoGrid, BentoCard } from "@/components/magicui/bento-grid";
+import Image from "next/image";
 
 const Features = () => {
 	const features = [
@@ -22,6 +23,14 @@ const Features = () => {
 			),
 			icon: CheckCircle,
 			name: "Intelligent Code Reviews",
+			background: (
+				<img
+					src={"/review.png"}
+					width={"100%"}
+					height={"100%"}
+					alt="review image"
+				/>
+			),
 		},
 		{
 			name: "Smart Issue Tagging",
@@ -33,6 +42,15 @@ const Features = () => {
 				<div className="flex h-full w-full bg-gradient-to-br from-accent/20 to-primary/20 rounded-lg" />
 			),
 			icon: GitBranch,
+
+			background: (
+				<img
+					src={"/review.png"}
+					width={"100%"}
+					height={"100%"}
+					alt="review image"
+				/>
+			),
 		},
 		{
 			name: "Team Collaboration",
@@ -44,6 +62,15 @@ const Features = () => {
 				<div className="flex h-full w-full bg-gradient-to-br from-secondary/40 to-muted/40 rounded-lg" />
 			),
 			icon: Users,
+
+			background: (
+				<img
+					src={"/review.png"}
+					width={"100%"}
+					height={"100%"}
+					alt="review image"
+				/>
+			),
 		},
 		{
 			name: "Lightning Fast Performance",
@@ -55,6 +82,15 @@ const Features = () => {
 				<div className="flex h-full w-full bg-gradient-to-br from-muted/40 to-secondary/40 rounded-lg" />
 			),
 			icon: Zap,
+			background: (
+				<img
+					src={"/review.png"}
+					// width={"100%"}
+					// height={"80%"}
+					className="inset-0 object-cover"
+					alt="review image"
+				/>
+			),
 		},
 	];
 
@@ -80,7 +116,7 @@ const Features = () => {
 							Icon={feature.icon}
 							className={feature.className}
 							name={feature.name}
-							background={undefined}
+							background={feature.background}
 							href={""}
 							cta={""}
 						/>

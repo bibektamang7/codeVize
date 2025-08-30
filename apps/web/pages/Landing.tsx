@@ -12,6 +12,7 @@
 // export default LandingPage;
 
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import React from "react";
 
 export default function CodevizeLanding() {
@@ -30,18 +31,16 @@ export default function CodevizeLanding() {
 								Home
 							</li>
 							<li className="opacity-70">Features</li>
-							<li className="opacity-70">Teams</li>
-							<li className="opacity-70">Docs</li>
 							<li className="opacity-70">Pricing</li>
 						</ul>
 					</nav>
 
 					<div className="hidden md:flex items-center gap-3">
-						<Button className="text-sm opacity-80 bg-inherit hover:cursor-pointer">
-							Login
+						<Button className="text-white text-sm opacity-80 bg-inherit hover:cursor-pointer hover:bg-accent">
+							<Link href={"/login"}>Login</Link>
 						</Button>
-						<Button className="hover:cursor-pointer px-4 py-1 rounded-full bg-inherit  border border-[rgba(255,255,255,0.12)] text-sm">
-							Sign Up
+						<Button className="text-white/90 bg-indigo-600 hover:cursor-pointer px-4 py-1 rounded-full border-[rgba(255,255,255,0.12)] text-sm hover:bg-indigo-500">
+							<Link href={"/signup"}>Sign Up</Link>
 						</Button>
 					</div>
 				</header>
