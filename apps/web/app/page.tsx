@@ -20,13 +20,21 @@
 
 import Features from "@/components/Features";
 import Landing from "@/pages/Landing";
+import Pricing from "@/components/Pricing";
+import Testimonials from "@/components/Testimonials";
+import FAQ from "@/components/FAQ";
 import React from "react";
+import Footer from "@/components/Footer";
 
 const Home = () => {
 	return (
 		<div className="dark">
-			<Landing />
-			<Features/>
+			<Landing/>
+			<Features />
+			<Pricing />
+			<Testimonials />
+			<FAQ />
+			<Footer />
 		</div>
 	);
 };

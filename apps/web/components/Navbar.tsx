@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import React from "react";
 import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
+import { usePathname } from "next/navigation";
 
 const navbarList = [
 	{
@@ -23,27 +26,43 @@ const navbarList = [
 ];
 
 const Navbar = () => {
-	return (
-		<div className="flex items-center justify-between">
-			<h2 className="font-semibold text-lg">CodeVize</h2>
-			<div className="flex gap-20 bg-slate-500 px-4 py-2 rounded-md ">
-				{navbarList.map((list, index) => (
-					<Link
-						className="font-semibold"
-						key={`${index}-${list.title}`}
-						href={list.redirect}
-					>
-						{list.title}
-					</Link>
-				))}
-			</div>
-			<div className="flex items-center gap-4">
-				<Button className="bg-inherit">Login</Button>
-				<Menu className="md:hidden" />
+	const pathname = usePathname();
 
-				<Button className="hidden md:flex">Get Started</Button>
+	return (
+		<header className="flex items-center justify-between px-8 py-6">
+			<div className="flex items-center gap-4">
+				<div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shadow-md"></div>
+				<Link href={"/"} className="font-semibold">Codevize</Link>
 			</div>
-		</div>
+
+			<nav className="flex items-center gap-6">
+				<ul className="hidden md:flex items-center gap-6 bg-[rgba(255,255,255,0.02)] px-4 py-2 rounded-full">
+					{navbarList.map((list) => (
+						<li key={list.redirect}>
+							<Link
+								href={list.redirect}
+								className={`px-4 py-1 font-medium ${
+									pathname === list.redirect
+										? "rounded-full bg-white text-black"
+										: "opacity-70 hover:opacity-100"
+								}`}
+							>
+								{list.title}
+							</Link>
+						</li>
+					))}
+				</ul>
+			</nav>
+
+			<div className="hidden md:flex items-center gap-3">
+				<Button className="text-white text-sm opacity-80 bg-inherit hover:cursor-pointer hover:bg-accent">
+					<Link href={"/login"}>Login</Link>
+				</Button>
+				<Button className="text-white/90 bg-indigo-600 hover:cursor-pointer px-4 py-1 rounded-full border-[rgba(255,255,255,0.12)] text-sm hover:bg-indigo-500">
+					<Link href={"/signup"}>Sign Up</Link>
+				</Button>
+			</div>
+		</header>
 	);
 };
 
