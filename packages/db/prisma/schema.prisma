@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  // output   = "../generated/prisma"
 }
 
 datasource db {
@@ -21,11 +14,12 @@ model User {
   email       String
   image       String
   activeRepos Int       @default(0)
-  plan        Plan      @relation(fields: [planId], references: [id])
-  createdAt   DateTime  @default(now())
-  repos       Repo[]
-  Payment     Payment[]
   planId      String
+  plan        Plan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  repos       Repo[]
+  payments    Payment[]
 }
 
 enum ExistingPlan {
@@ -37,73 +31,119 @@ enum ExistingPlan {
 model Plan {
   id          String       @id @default(cuid())
   name        ExistingPlan @unique @default(FREE)
-  price       Float
-  maxRepos    Int // important field
+  price       Float?
+  maxRepos    Int
   description String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  User        User[]
-  Payment     Payment[]
+  users       User[]
+  payments    Payment[]
 }
 
 model Payment {
-  id       String   @id @default(cuid())
-  userId   String
-  user     User     @relation(fields: [userId], references: [id])
-  status   String
-  amount   Int
-  planId   String
-  plan     Plan     @relation(fields: [planId], references: [id])
-  cretedAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    String
+  amount    Int
+  planId    String
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Repo {
-  id             String        @id @default(cuid())
-  repoId         String        @unique
-  repoName       String
-  repoFullName   String
-  repoURL        String
-  // FOR NOW ONLY, to get language, you can get it from the URL on installation
-  languages      String[]
-  installationId String
-  isActive       Boolean       @default(false)
-  User           User          @relation(fields: [userId], references: [id])
-  userId         String
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  pullRequests   PullRequest[]
-  Issue          Issue[]
+  id              String         @id @default(cuid())
+  repoId          String         @unique
+  repoName        String
+  repoFullName    String
+  repoURL         String
+  languages       String[]
+  installationId  String
+  isActive        Boolean        @default(false)
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  repoConfig      RepoConfig?
+  generalConfigId String
+  generalConfig   GeneralConfig  @relation(fields: [generalConfigId], references: [id], onDelete: Cascade)
+  pathConfigs     PathConfig[]
+  labelConfigs    LabelConfig[]
+  RepoErrorLog    RepoErrorLog[]
 }
 
-model PullRequest {
+enum Tone {
+  professional
+  casual
+  friendly
+  humorous
+  enthusiastic
+  empathetic
+  formal
+  informal
+}
+
+model GeneralConfig {
+  id             String   @id @default(cuid())
+  tone           Tone     @default(professional)
+  enableFreeTier Boolean  @default(true)
+  earlyAccess    Boolean  @default(false)
+  defaultModel   String?
+  maxTokens      Int?
+  contextDepth   Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  Repo           Repo[]
+}
+
+model RepoConfig {
+  id                       String   @id @default(cuid())
+  repoId                   String   @unique
+  repo                     Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  prEnabled                Boolean  @default(true)
+  issueEnabled             Boolean  @default(true)
+  aiReviewEnabled          Boolean  @default(false)
+  highLevelSummaryEnabled  Boolean  @default(true)
+  showWalkThrough          Boolean  @default(false)
+  abortOnClose             Boolean  @default(true)
+  isProgressFortuneEnabled Boolean  @default(false)
+  poemEnabled              Boolean  @default(false)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}
+
+model PathConfig {
+  id           String   @id @default(cuid())
+  repoId       String
+  Repo         Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  importance   Int?
+  pathPattern  String
+  instructions String?
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model LabelConfig {
+  id           String   @id @default(cuid())
+  repoId       String
+  Repo         Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  label        String
+  instructions String?
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model RepoErrorLog {
   id         String   @id @default(cuid())
-  prNumber   String
-  title      String
-  commitHash String
-  state      String
-  createdAt   DateTime @default(now())
-  Repo       Repo     @relation(fields: [repoId], references: [id])
   repoId     String
-  reviews    Review[]
-}
-
-model Review {
-  id            String      @id @default(cuid())
-  reviewSummary String      @db.Text
-  tags          String[]
-  aiScore       Int?
-  createdAt     DateTime    @default(now())
-  PullRequest   PullRequest @relation(fields: [pullRequestId], references: [id])
-  pullRequestId String
-}
-
-model Issue {
-  id        String   @id @default(cuid())
-  title     String
-  body      String
-  state     String
-  tags      String[]
-  createdAt DateTime @default(now())
-  Repo      Repo     @relation(fields: [repoId], references: [id])
-  repoId    String
+  Repo       Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  message    String
+  type       String
+  number     Int?
+  details    String?
+  occurredAt DateTime @default(now())
+  resolved   Boolean  @default(false)
 }
