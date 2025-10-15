@@ -4,7 +4,7 @@
 	"type": "module",
 	"private": true,
 	"exports": {
-		"./chains/embedRepo": "./chains/embedRepo.ts"
+		".": "./index.ts"
 	},
 	"devDependencies": {
 		"@types/bun": "latest"

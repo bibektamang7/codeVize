@@ -1,6 +1,7 @@
-import { PullRequestGraphState } from "./graph";
-import { walkThroughPrompt } from "../prompts/reviewPrompt";
-import { getCodeSummarizationModel } from "../utils/codeSummarizationLLMFactory";
+import { Send } from "@langchain/langgraph";
+import { PullRequestGraphState } from "../../graphs/graph";
+import { walkThroughPrompt } from "../../prompts/reviewPrompt";
+import { getCodeSummarizationModel } from "../codeSummarizationLLMFactory";
 import { getAuthenticatedOctokit } from "github-config";
 
 //TODO:RETRY MECHANISM NOT IMPLEMENTED FOR NOW
@@ -55,16 +56,14 @@ $file_diff
 			"Successfully posted summary to the pull request.",
 			summarySubmit.data.author_association
 		);
-	} catch (error) {
+	} catch (error: any) {
 		console.log("this is error in summary", error);
 		console.error("Failed to summarize the PR diffs");
+		return new Send("errorOccured", {
+			error: {
+				type: "PR Summary",
+				message: error.message || `Failed to summarize PR\n: ${error}`,
+			},
+		});
 	}
 };
-
-export const publishSummary = async ({
-	State,
-}: typeof PullRequestGraphState) => {};
-
-export const rawPRDiffSummary = async ({
-	State,
-}: typeof PullRequestGraphState) => {};

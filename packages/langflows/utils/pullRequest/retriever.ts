@@ -3,7 +3,7 @@ import { OllamaEmbeddings } from "@langchain/ollama";
 import { ChromaClient } from "chromadb";
 import type { Document } from "langchain/document";
 
-import { PullRequestGraphState } from "./graph";
+import { PullRequestGraphState } from "../../graphs/graph";
 import { getAuthenticatedOctokit } from "github-config";
 import {
 	embeddingModelName,
@@ -11,13 +11,13 @@ import {
 	vectorDBHost,
 	vectorDBPort,
 	vectorDBSSL,
-} from "../utils/config";
+} from "../config";
 import {
 	REVIEWED_COMMITS_BLOCK_END,
 	REVIEWED_COMMITS_BLOCK_START,
 	SUMMARIZE_TAG,
-} from "../utils";
-import { checkPathFilter } from "../utils/utils";
+} from "..";
+import { checkPathFilter } from "../utils";
 
 export const retrieveWithParents = async (options: {
 	query: string;
@@ -104,7 +104,9 @@ export const retrieveWithParents = async (options: {
 	return expanded;
 };
 
-export const retrievePRContent = async (
+
+
+export const retrievePRContext = async (
 	State: typeof PullRequestGraphState.State
 ) => {
 	const octokit = await getAuthenticatedOctokit(State.installationId);

@@ -1,11 +1,11 @@
-import { getCodeSuggestionModel } from "../utils/codeSuggestionLLMFactory";
-import type { PullRequestGraphState } from "./graph";
+import { getCodeSuggestionModel } from "../codeSuggestionLLMFactory";
+import type { PullRequestGraphState } from "../../graphs/graph";
 import {
 	// codeSuggestionPrompt,
 	newSuggestonPrompt,
 	reviewPrompt,
 	suggestionSystemPrompt,
-} from "../prompts/reviewPrompt";
+} from "../../prompts/reviewPrompt";
 import { getAuthenticatedOctokit } from "github-config";
 import { extractDiffHunks, retrieveWithParents } from "./retriever";
 import { Document } from "langchain/document";
