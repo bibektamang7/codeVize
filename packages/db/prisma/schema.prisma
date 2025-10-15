@@ -65,8 +65,7 @@ model Repo {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  repoConfigId String     @unique
-  repoConfig   RepoConfig @relation(fields: [repoConfigId], references: [id], onDelete: Cascade)
+  repoConfig RepoConfig?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -74,6 +73,9 @@ model Repo {
 
 model RepoConfig {
   id String @id @default(cuid())
+
+  repoId String @unique
+  repo   Repo   @relation(fields: [repoId], references: [id], onDelete: Cascade)
 
   generalConfigId String        @unique
   generalConfig   GeneralConfig @relation(fields: [generalConfigId], references: [id], onDelete: Cascade)
@@ -85,7 +87,6 @@ model RepoConfig {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Repo      Repo?
 }
 
 enum Tone {
@@ -107,8 +108,6 @@ model GeneralConfig {
   defaultModel   String?
 
   contextDepth Int?
-
-  prEnabled    Boolean @default(true)
   issueEnabled Boolean @default(true)
 
   createdAt  DateTime    @default(now())
@@ -117,11 +116,10 @@ model GeneralConfig {
 }
 
 model ReviewConfig {
-  id String @id @default(cuid())
-
+  id                       String  @id @default(cuid())
   aiReviewEnabled          Boolean @default(false)
   highLevelSummaryEnabled  Boolean @default(true)
-  showWalkThrough          Boolean @default(false)
+  showWalkThrough          Boolean @default(true)
   abortOnClose             Boolean @default(true)
   isProgressFortuneEnabled Boolean @default(false)
   poemEnabled              Boolean @default(false)
@@ -161,7 +159,6 @@ model RepoErrorLog {
   message      String
   type         String // e.g. "suggestion", "review", "embedding", "labelTag"
   number       Int?
-  details      String?
   occurredAt   DateTime   @default(now())
   resolved     Boolean    @default(false)
 }
