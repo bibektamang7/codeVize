@@ -1,146 +1,93 @@
-// import { getModelClass } from "../utils/LLMFactory";
-import { GithubRepoLoader } from "@langchain/community/document_loaders/web/github";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { Chroma } from "@langchain/community/vectorstores/chroma";
-import { OllamaEmbeddings } from "@langchain/ollama";
-import {
-	embeddingModelName,
-	embeddingModelUrl,
-	vectorDBHost,
-	vectorDBPort,
-	vectorDBSSL,
-} from "../utils/config";
-
-export async function deleteEmbededRepo(
-	installationId: number,
-	owner: string,
-	repoName: string
-) {
-	console.log("yeat aayo you paxi here ram la");
-	// const embeddingModel = new OllamaEmbeddings({
-	// 	model: embeddingModelName,
-	// 	baseUrl: embeddingModelUrl,
-	// });
-	// const chromaStore = new Chroma(embeddingModel, {
-	// 	clientParams: {
-	// 		host: vectorDBHost,
-	// 		port: vectorDBPort,
-	// 		ssl: vectorDBSSL,
-	// 	},
-	// });
-	// await chromaStore.delete({
-	// 	filter: {
-	// 		repoId: `${owner}/${repoName}`,
-	// 		installationId: installationId,
-	// 	},
-	// });
-	// console.log("Delete repo embedding too");
-}
+import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { listRepoFiles, getRepoFileContent } from "../utils/github/index";
+import { buildDependencyGraph } from "../utils/github/astParser";
 
 export async function embedRepoChain(
 	installationId: number,
 	owner: string,
-	repoName: string
+	repo: string
 ) {
-	// const modelClass = getModelClass();
+	console.log(`Embedding repo: ${owner}/${repo}`);
 
-	const githubURL = `https://github.com/${owner}/${repoName}`;
-	const githubLoader = getGithubLoader(githubURL);
-	const docs = await githubLoader.load();
+	const allFiles = await listRepoFiles(installationId, owner, repo);
+	const filteredFiles = allFiles.filter(shouldEmbed);
 
-	const splitter = getTextSplitter();
-	const splitDocs = await splitter.splitDocuments(docs);
-	const embeddingModelName =
-		process.env.EMBEDDING_MODEL || "unclemusclez/jina-embeddings-v2-base-code";
-	const embeddingModelUrl =
-		process.env.EMBEDDING_MODEL_URL || "http://localhost:11434";
+	const fileContents: Record<string, string> = {};
 
-	// const vectorDBUrl = process.env.VECTOR_DB_URL || "http://localhost:8000";
-	const vectorDBHost = process.env.VECTOR_DB_HOST || "localhost";
-	const vectorDBPort = process.env.VECTOR_DB_PORT || 8000;
-	const vectorDBSSL =
-		process.env.VECTOR_DB_SSL || vectorDBHost === "localhost" ? false : true;
-	const embeddingModel = new OllamaEmbeddings({
-		model: embeddingModelName,
-		baseUrl: embeddingModelUrl,
+	for (const file of filteredFiles) {
+		const content = await getRepoFileContent(installationId, owner, repo, file);
+		if (content && content.length < 100_000) fileContents[file] = content;
+	}
+
+	const graph = buildDependencyGraph(fileContents);
+
+	const splitter = new RecursiveCharacterTextSplitter({
+		chunkSize: 1000,
+		chunkOverlap: 150,
 	});
+
+	const embeddingModel = new OllamaEmbeddings({
+		model: process.env.EMBEDDING_MODEL || "mxbai-embed-large",
+		baseUrl: process.env.EMBEDDING_MODEL_URL || "http://localhost:11434",
+	});
+
 	const chromaStore = new Chroma(embeddingModel, {
 		collectionName: "repo_embeddings",
-		collectionMetadata: {
-			installationId: installationId,
-			repoId: `${owner}/${repoName}`,
-		},
-		clientParams: {
-			host: vectorDBHost,
-			port: vectorDBPort,
-			ssl: vectorDBSSL,
-		},
+		collectionMetadata: { repoId: `${owner}/${repo}`, installationId },
+		clientParams: { host: "localhost", port: 8000 },
 	});
-	await chromaStore.addDocuments(splitDocs);
-	console.log("Repo embedded successfully");
+
+	const docs = [];
+	for (const [path, code] of Object.entries(fileContents)) {
+		const chunks = await splitter.splitText(code);
+		for (const chunk of chunks) {
+			docs.push({
+				pageContent: chunk,
+				metadata: {
+					filePath: path,
+					repo,
+					owner,
+					imports: graph[path],
+				},
+			});
+		}
+	}
+
+	await chromaStore.addDocuments(docs);
+	console.log("✅ Repo embedded successfully");
 }
 
-const getTextSplitter = () => {
-	return new RecursiveCharacterTextSplitter({
-		chunkOverlap: 200,
-		chunkSize: 1000,
-		separators: [
-			"\nclass",
-			"\nfunction",
-			"\nconst",
-			"\nlet",
-			"\nvar",
-			"\nif",
-			"\nelse",
-			"\nfor",
-			"\nwhile",
-			"\nreturn",
-			"\nimport",
-			"\nexport",
-			"\nfrom",
-			"\nrequire",
-			"\n//",
-			"\n",
-		],
-	});
-};
-
-const getGithubLoader = (githubURL: string) => {
-	return new GithubRepoLoader(githubURL, {
-		branch: "main",
-		recursive: true,
-		unknown: "warn",
-		ignoreFiles: [
-			"README.md",
-			"LICENSE",
-			"CONTRIBUTING.md",
-			"CODE_OF_CONDUCT.md",
-			"CHANGELOG.md",
-			".gitignore",
-			".github",
-			".vscode",
-			"node_modules",
-			"dist",
-			"build",
-			"*.log",
-			"*.lock",
-			"*.json",
-			"*.yml",
-			"*.yaml",
-			"*.md",
-		],
-		ignorePaths: [
-			"**/node_modules/**",
-			"**/dist/**",
-			"**/build/**",
-			"**/coverage/**",
-			"**/tests/**",
-			"**/.github/**",
-			"**/docs/**",
-			"**/examples/**",
-			"**/scripts/**",
-			"**/assets/**",
-			"**/public/**",
-		],
-	});
-};
+function shouldEmbed(filePath: string) {
+	const skipPatterns = [
+		"node_modules/",
+		"dist/",
+		"build/",
+		".next/",
+		"__tests__/",
+		"coverage/",
+		"scripts/",
+		"docs/",
+		"examples/",
+		"assets/",
+		"public/",
+	];
+	const skipExtensions = [
+		".json",
+		".md",
+		".yml",
+		".yaml",
+		".svg",
+		".png",
+		".jpg",
+		".jpeg",
+		".lock",
+	];
+	const fileName = filePath.split("/").pop() || "";
+	if (skipPatterns.some((p) => filePath.includes(p))) return false;
+	if (skipExtensions.some((ext) => fileName.endsWith(ext))) return false;
+	if (fileName.startsWith(".") || fileName.startsWith("index.")) return false;
+	if (fileName.includes(".test.") || fileName.includes(".spec.")) return false;
+	return fileName.endsWith(".ts") || fileName.endsWith(".tsx");
+}
