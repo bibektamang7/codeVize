@@ -1,13 +1,16 @@
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import {
-	getAllRepositories,
-	getRepository,
+  getUser,
+  updateUser,
+  deleteUser,
 } from "../controllers/user.controller";
 
 const router = Router();
 
-router.route("/repository/:repoId").get(authMiddleware, getRepository);
-router.route("/repositories").get(authMiddleware, getAllRepositories);
+router.route("/user")
+  .get(authMiddleware, getUser)
+  .put(authMiddleware, updateUser)
+  .delete(authMiddleware, deleteUser);
 
 export default router;
