@@ -1,9 +1,8 @@
 import { Chroma } from "@langchain/community/vectorstores/chroma";
 import { OllamaEmbeddings } from "@langchain/ollama";
-import { ChromaClient } from "chromadb";
-import type { Document } from "langchain/document";
+import { Document } from "langchain/document";
 
-import { PullRequestGraphState } from "../../graphs/graph";
+import type { PullRequestGraphState } from "../../graphs/pullRequestGraph";
 import { getAuthenticatedOctokit } from "github-config";
 import {
 	embeddingModelName,
@@ -18,51 +17,48 @@ import {
 	SUMMARIZE_TAG,
 } from "..";
 import { checkPathFilter } from "../utils";
+import { hash } from "ohash";
+
+const queryCache = new Map<string, Document[]>();
 
 export const retrieveWithParents = async (options: {
 	query: string;
 	kPerQuery?: number;
 	maxParents?: number;
-	neighbours?: number;
+	similarityThreshold?: number;
 	owner: string;
 	repo: string;
 	installationId: number;
+	cache?: boolean;
 }) => {
 	const {
 		query,
 		kPerQuery = 6,
 		maxParents = 10,
-		installationId,
+		similarityThreshold = 0.7,
 		owner,
 		repo,
+		installationId,
+		cache = true,
 	} = options;
-	console.log("this is here i know now");
-	const chromaClient = new ChromaClient({
-		host: "localhost",
-		port: 8000,
-		ssl: false,
-	});
-	// const vectorStore = new Chroma(
-	// 	new OllamaEmbeddings({
-	// 		model: "",
-	// 		baseUrl: "",
-	// 	}),
-	// 	{
-	// 		collectionName: "",
-	// 	}
-	// );
 
+	if (!query?.trim()) return [];
+
+	const cacheKey = hash({ query, owner, repo, installationId });
+	if (cache && queryCache.has(cacheKey)) {
+		return queryCache.get(cacheKey)!;
+	}
 	const embeddingModel = new OllamaEmbeddings({
 		model: embeddingModelName,
 		baseUrl: embeddingModelUrl,
 	});
 
-	const queryEmbeded = await embeddingModel.embedDocuments([query]);
+	const queryEmbedded = await embeddingModel.embedQuery(query);
 
 	const chromaStore = new Chroma(embeddingModel, {
 		collectionName: "repo_embeddings",
 		collectionMetadata: {
-			installationId: installationId,
+			installationId,
 			repoId: `${owner}/${repo}`,
 		},
 		clientParams: {
@@ -71,49 +67,65 @@ export const retrieveWithParents = async (options: {
 			ssl: vectorDBSSL,
 		},
 	});
-	console.log("is this seach comeher and so do");
-	// const hits = await chromaStore.similaritySearch(query, kPerQuery);
-	const result = await chromaStore.similaritySearchVectorWithScore(
-		//@ts-ignore
-		queryEmbeded,
-		kPerQuery,
-		{
-			// installationId: { $eq: installationId },
-			repoId: { $eq: `${owner}/${repo}` },
-		}
-	);
-	const hits = result.map((result) => result[0]);
-	console.log("this is hits", hits);
-	const byParent = new Map<string, Document[]>();
-	for (const h of hits) {
-		const parentId = h.metadata.parentId;
-		if (!byParent.has(parentId)) byParent.set(parentId, []);
-		byParent.get(parentId)?.push(h);
-	}
-	const parents = Array.from(byParent.entries()).slice(0, maxParents);
-	const expanded: Document[] = [];
 
+	let results: [Document, number][] = [];
+	try {
+		results = await chromaStore.similaritySearchVectorWithScore(
+			queryEmbedded,
+			kPerQuery,
+			{
+				repoId: { $eq: `${owner}/${repo}` },
+			}
+		);
+	} catch (err) {
+		console.error("Chroma search failed:", err);
+		return [];
+	}
+
+	const filtered = results.filter(([_, score]) => score >= similarityThreshold);
+	if (filtered.length === 0) return [];
+
+	// Group by parentId for structural context
+	const byParent = new Map<string, Document[]>();
+	for (const [doc] of filtered) {
+		const parentId = doc.metadata?.parentId || doc.metadata?.source || "root";
+		if (!byParent.has(parentId)) byParent.set(parentId, []);
+		byParent.get(parentId)!.push(doc);
+	}
+
+	const parents = Array.from(byParent.entries()).slice(0, maxParents);
+
+	const expanded: Document[] = [];
 	for (const [, docs] of parents) {
 		const sorted = docs.sort(
-			(a, b) => (a.metadata.start ?? 0) - (b.metadata.start ?? 0)
+			(a, b) => (a.metadata?.start ?? 0) - (b.metadata?.start ?? 0)
 		);
+
+		let buffer = "";
 		for (const d of sorted) {
-			expanded.push(d);
+			buffer += d.pageContent + "\n";
 		}
+		const firstMeta = sorted[0]?.metadata ?? {};
+		const mergedDoc = new Document({
+			pageContent: buffer.trim(),
+			metadata: firstMeta,
+		});
+		expanded.push(mergedDoc);
 	}
+
+	if (cache) queryCache.set(cacheKey, expanded);
+
 	return expanded;
 };
 
-
-
-export const retrievePRContext = async (
+export const retrievePRFiles = async (
 	State: typeof PullRequestGraphState.State
 ) => {
 	const octokit = await getAuthenticatedOctokit(State.installationId);
 
 	const pr = await octokit.rest.pulls.get({
 		owner: State.owner,
-		repo: State.repo,
+		repo: State.repoName,
 		pull_number: State.prNumber,
 	});
 
@@ -121,7 +133,7 @@ export const retrievePRContext = async (
 		"GET /repos/{owner}/{repo}/compare/{base}...{head}",
 		{
 			owner: State.owner,
-			repo: State.repo,
+			repo: State.repoName,
 			base: pr.data.base.sha,
 			head: pr.data.head.sha,
 		}
@@ -137,7 +149,7 @@ export const retrievePRContext = async (
 
 	const commentsResponse = await octokit.rest.issues.listComments({
 		owner: State.owner,
-		repo: State.repo,
+		repo: State.repoName,
 		issue_number: State.prNumber,
 	});
 	// find hte comment with the SUMMARIZE_TAG
@@ -160,7 +172,7 @@ export const retrievePRContext = async (
 
 			const commitsResponse = await octokit.rest.pulls.listCommits({
 				owner: State.owner,
-				repo: State.repo,
+				repo: State.repoName,
 				pull_number: State.prNumber,
 			});
 
@@ -183,7 +195,7 @@ export const retrievePRContext = async (
 			"GET /repos/{owner}/{repo}/compare/{base}...{head}",
 			{
 				owner: State.owner,
-				repo: State.repo,
+				repo: State.repoName,
 				base: baseSha,
 				head: pr.data.head.sha,
 			}
@@ -242,33 +254,6 @@ export const retrievePRContext = async (
 	};
 };
 
-export const retrieveContextFromVectorDB = async ({
-	State,
-}: typeof PullRequestGraphState) => {
-	const chromaClient = new ChromaClient({
-		host: vectorDBHost,
-		port: Number(vectorDBPort),
-		ssl: vectorDBSSL,
-	});
-
-	const embeddingModel = new OllamaEmbeddings({
-		model: embeddingModelName,
-		baseUrl: embeddingModelUrl,
-	});
-
-	const chromaStore = new Chroma(embeddingModel, {
-		collectionName: "repo_embeddings",
-		clientParams: {
-			host: vectorDBHost,
-			port: vectorDBPort,
-			ssl: vectorDBSSL,
-		},
-	});
-	// const similaritySearch = await vectorStore.similaritySearch(
-
-	// 	4
-	// );
-};
 type DiffHunk = {
 	filePath: string;
 	header: string; // e.g., @@ -10,6 +10,9 @@

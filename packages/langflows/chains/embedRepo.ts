@@ -3,12 +3,20 @@ import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { listRepoFiles, getRepoFileContent } from "../utils/github/index";
 import { buildDependencyGraph } from "../utils/github/astParser";
+import { prisma } from "db/prisma";
+import {
+	embeddingModelName,
+	embeddingModelUrl,
+	vectorDBHost,
+	vectorDBPort,
+	vectorDBSSL,
+} from "../utils/config";
 
-export async function embedRepoChain(
+export const embedRepoChain = async (
 	installationId: number,
 	owner: string,
 	repo: string
-) {
+) => {
 	console.log(`Embedding repo: ${owner}/${repo}`);
 
 	const allFiles = await listRepoFiles(installationId, owner, repo);
@@ -57,9 +65,9 @@ export async function embedRepoChain(
 
 	await chromaStore.addDocuments(docs);
 	console.log("✅ Repo embedded successfully");
-}
+};
 
-function shouldEmbed(filePath: string) {
+const shouldEmbed = (filePath: string) => {
 	const skipPatterns = [
 		"node_modules/",
 		"dist/",
@@ -90,4 +98,65 @@ function shouldEmbed(filePath: string) {
 	if (fileName.startsWith(".") || fileName.startsWith("index.")) return false;
 	if (fileName.includes(".test.") || fileName.includes(".spec.")) return false;
 	return fileName.endsWith(".ts") || fileName.endsWith(".tsx");
-}
+};
+
+export const deleteEmbedRepo = async ({
+	installationId,
+	repoId,
+	repoName,
+	owner,
+}: {
+	installationId: number;
+	repoId: string;
+	repoName: string;
+	owner: string;
+}) => {
+	console.log(`Cleaning up resources for ${owner}/${repoName}...`);
+
+	try {
+		console.log("Deleting vector embeddings...");
+		const embeddingModel = new OllamaEmbeddings({
+			model: embeddingModelName,
+			baseUrl: embeddingModelUrl,
+		});
+
+		const chromaStore = new Chroma(embeddingModel, {
+			collectionName: "repo_embeddings",
+			collectionMetadata: { installationId, repoId: `${owner}/${repoName}` },
+			clientParams: {
+				host: vectorDBHost,
+				port: vectorDBPort,
+				ssl: vectorDBSSL,
+			},
+		});
+
+		const collection = await chromaStore.ensureCollection();
+
+		if (collection) {
+			await collection.delete({
+				where: { repoId: { $eq: `${owner}/${repoName}` } },
+			});
+			console.log(` Deleted ${owner}/${repoName} embeddings from vector store`);
+		} else {
+			console.warn(" No Chroma collection found for this repo");
+		}
+
+		console.log("Deleting repo metadata from DB...");
+		try {
+			await prisma.repo.delete({
+				where: { repoId, installationId: String(installationId) },
+			});
+			console.log(" Repo record removed from DB");
+		} catch (err: any) {
+			if (err.code === "P2025") {
+				console.log("️Repo not found in DB, skipping");
+			} else {
+				console.error("Error deleting repo from DB:", err);
+			}
+		}
+
+		console.log(`Cleanup completed for ${owner}/${repoName}`);
+	} catch (error) {
+		console.error(`Cleanup failed for ${owner}/${repoName}:`, error);
+	}
+};

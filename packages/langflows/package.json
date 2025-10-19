@@ -24,6 +24,8 @@
 		"db": "*",
 		"github-config": "*",
 		"ignore": "^7.0.5",
-		"langchain": "^0.3.30"
+		"langchain": "^0.3.30",
+		"minimatch": "^10.0.3",
+		"ohash": "^2.0.11"
 	}
 }

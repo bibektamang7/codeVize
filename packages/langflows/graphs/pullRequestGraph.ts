@@ -1,5 +1,5 @@
 import { Annotation, StateGraph, Send } from "@langchain/langgraph";
-import { retrievePRContext } from "../utils/pullRequest/retriever";
+import { retrievePRFiles } from "../utils/pullRequest/retriever";
 import type { Commits, PullRequestFiles } from "github-config";
 import { prisma } from "db/prisma";
 import type { Repo, RepoError } from "../types/types";
@@ -136,16 +136,18 @@ const handleErrorOccuredNode = async (
 	}
 };
 
+
 export const pullRequestWorkflow = new StateGraph(PullRequestGraphState)
 	.addNode("validation", validationNode)
 	.addNode("highLevelSummary", highLevelSummaryNode)
 	.addNode("tabularPRFilesSummarize", tabularPRDiffSummary)
-	.addNode("retrievePRContext", retrievePRContext)
+	.addNode("retrievePRFiles", retrievePRFiles)
+	// .addNode("retrievePRContext", retrievePRContext)
 	.addNode("checkBugsOrImprovement", checkBugsOrImprovement)
 	.addNode("errorOccured", handleErrorOccuredNode)
 	.addEdge("validation", "highLevelSummary")
 	.addEdge("highLevelSummary", "tabularPRFilesSummarize")
-	.addEdge("tabularPRFilesSummarize", "retrievePRContext")
+	.addEdge("tabularPRFilesSummarize", "retrievePRFiles")
 	.addConditionalEdges(
 		"validation",
 		(state: typeof PullRequestGraphState.State) => {
@@ -168,7 +170,7 @@ export const pullRequestWorkflow = new StateGraph(PullRequestGraphState)
 				state.repo.repoConfig &&
 				!state.repo.repoConfig.reviewConfig.showWalkThrough
 			) {
-				return "retrievePRContext";
+				return "retrievePRFiles";
 			}
 			return "tabularPRFilesSummarize";
 		}
@@ -182,9 +184,10 @@ export const pullRequestWorkflow = new StateGraph(PullRequestGraphState)
 			) {
 				return "__end__";
 			}
-			return "retrievePRContext";
+			return "retrievePRFiles";
 		}
 	)
-	.addEdge("retrievePRContext", "checkBugsOrImprovement")
+	.addEdge("retrievePRFiles", "checkBugsOrImprovement")
+	// .addEdge("retrievePRContext", "checkBugsOrImprovement")
 	.addEdge("checkBugsOrImprovement", "__end__")
 	.addEdge("errorOccured", "__end__");

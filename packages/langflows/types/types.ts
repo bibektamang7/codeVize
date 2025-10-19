@@ -10,6 +10,13 @@ export interface Repo {
 			enableFreeTier: boolean;
 			defaultModel?: string;
 		};
+		issueConfig: {
+			id: string;
+			autoTriage: boolean;
+			aiSuggestion: boolean;
+			aiIssueTriageEnabled: boolean;
+			issueEmbedEnabled: boolean;
+		};
 		reviewConfig: {
 			aiReviewEnabled: boolean;
 			highLevelSummaryEnabled: boolean;
@@ -31,4 +38,9 @@ export interface Repo {
 export interface RepoError {
 	type: string;
 	message: string;
+}
+
+export interface IssueAnalysis {
+	category: string,
+	priority: string,
 }

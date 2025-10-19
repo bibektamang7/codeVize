@@ -1,127 +1,166 @@
-import { getCodeSuggestionModel } from "../codeSuggestionLLMFactory";
-import type { PullRequestGraphState } from "../../graphs/graph";
-import {
-	// codeSuggestionPrompt,
-	newSuggestonPrompt,
-	reviewPrompt,
-	suggestionSystemPrompt,
-} from "../../prompts/reviewPrompt";
 import { getAuthenticatedOctokit } from "github-config";
 import { extractDiffHunks, retrieveWithParents } from "./retriever";
-import { Document } from "langchain/document";
+import type { PullRequestGraphState } from "../../graphs/pullRequestGraph";
+import { getCodeSuggestionModel } from "../codeSuggestionLLMFactory";
+import { suggestionSystemPrompt } from "../../prompts/reviewPrompt";
+import { Send } from "@langchain/langgraph";
 
-//TODO: rename function name
-interface ReviewComment {
-	path: string;
-	body: string;
-	line: number;
-	start_line?: number;
-}
+const MAX_QUERY_LEN = 4000;
+const BATCH_SIZE = 10;
+const SIMILARITY_THRESHOLD = 0.75;
+
+const tryInvoke = async <T>(
+	fn: () => Promise<T>,
+	retries = 3,
+	delay = 1000
+): Promise<T> => {
+	for (let i = 0; i < retries; i++) {
+		try {
+			return await fn();
+		} catch (err) {
+			if (i < retries - 1)
+				await new Promise((res) => setTimeout(res, delay * (i + 1)));
+		}
+	}
+	throw new Error("Max retries reached");
+};
 
 export const checkBugsOrImprovement = async (
 	State: typeof PullRequestGraphState.State
 ) => {
-	const comments: ReviewComment[] = [];
+	const comments: any[] = [];
 	const filterSelectedFiles = State.unReviewedFiles;
-	if (!filterSelectedFiles || filterSelectedFiles.length === 0) {
+	if (!filterSelectedFiles?.length) {
 		console.error("Filter selected files is empty");
-		return;
+		return {};
 	}
 
-	let failedHunks = [];
+	const failedHunks = [];
+
 	for (const file of filterSelectedFiles) {
 		if (!file.patch) continue;
 
 		const hunks = extractDiffHunks(file.patch, file.filename);
-		console.log("this hunks", hunks);
 
 		for (const hunk of hunks) {
-			const query = hunk.added.join("\n") || hunk.removed.join("\n");
+			const query = [...hunk.added, ...hunk.removed]
+				.join("\n")
+				.trim()
+				.slice(0, MAX_QUERY_LEN);
+			if (!query) continue;
 
-			// Assuming `retrieveWithParents` returns a proper context
-			const relatedDocs = await retrieveWithParents({
-				query,
-				kPerQuery: 5,
-				maxParents: 3,
-				repo: State.repo,
-				owner: State.owner,
-				installationId: State.installationId,
-			});
+			let relatedDocs: any[] = [];
+			try {
+				relatedDocs = await retrieveWithParents({
+					query,
+					kPerQuery: 6,
+					maxParents: 5,
+					repo: State.repoName,
+					owner: State.owner,
+					installationId: State.installationId,
+					similarityThreshold: SIMILARITY_THRESHOLD,
+				});
+			} catch (err) {
+				console.warn(
+					"Failed to retrieve embeddings context, continuing without context:",
+					err
+				);
+			}
+
+			const contextBlock =
+				relatedDocs.length > 0
+					? `Context from similar parts of the repo (use if relevant):\n${relatedDocs
+							.map(
+								(d, i) => `#${i + 1} (${d.metadata.source})\n${d.pageContent}`
+							)
+							.join("\n\n---\n\n")}`
+					: "No relevant context retrieved.";
 
 			const prompt = `
+
 File: ${hunk.filePath}
-changed code:
+
+Changed code:
 ${hunk.code}
 
-Relevant repo context:
-${relatedDocs.map((d) => `Source: ${d.metadata.source}\n${d.pageContent}`).join("\n\n")}
+${contextBlock}
 
-Review the code above and provide a concise, actionable inline comment. Your response MUST follow this format, including the emoji, category, explanation, and diff block with suggested changes:
-
+Format your comment exactly as follows:
 [Emoji] [Category]
-[Your brief explanation of the issue.]
+[Brief explanation of the issue.]
 
 \`\`\`diff
 [Suggested code changes here]
 \`\`\`
 `;
+
 			try {
 				const suggestionModel = getCodeSuggestionModel();
-				const suggestionResponse = await suggestionModel.invoke([
-					{
-						role: "system",
-						content: suggestionSystemPrompt,
-					},
-					{
-						role: "user",
-						content: prompt,
-					},
-				]);
-				console.log("this is suggestion response", suggestionResponse.text);
 
-				// --- ADDED LOGIC ---
-				// Parse the hunk header to get the starting line number for the comment
-				// The hunk header is like "@@ -1,4 +1,4 @@"
+				const suggestionResponse = await tryInvoke(() =>
+					suggestionModel.invoke([
+						{ role: "system", content: suggestionSystemPrompt },
+						{ role: "user", content: prompt },
+					])
+				);
+
+				const suggestionText = suggestionResponse?.text?.trim();
+				if (!suggestionText || suggestionText.includes("Looks good")) continue;
+
 				const headerMatch = hunk.header.match(/@@ -\d+,\d+ \+(\d+),\d+ @@/);
-				if (headerMatch && suggestionResponse.text) {
-					const startLine = parseInt(headerMatch[1]!, 10);
-					comments.push({
-						path: hunk.filePath,
-						body: suggestionResponse.text,
-						line: startLine,
-					});
-				}
-			} catch (error) {
+				const startLine = headerMatch ? parseInt(headerMatch[1]!, 10) : 1;
+
+				comments.push({
+					path: hunk.filePath,
+					body: suggestionText,
+					line: startLine,
+				});
+			} catch (error: any) {
 				failedHunks.push(hunk);
-				console.error("failed to get suggestion", error);
+				console.error("Failed to get suggestion:", error);
+
+				return new Send("errorOccured", {
+					error: {
+						message: error.message || "Failed to get suggestion",
+						type: "review",
+					},
+				});
 			}
 		}
 	}
 
-	// --- ADDED LOGIC ---
-	// Post all collected comments in a single review
-	console.log("this is comments", comments);
 	if (comments.length > 0) {
-		console.log(
-			"THis is commits",
-			State.commits.length,
-			State.commits[State.commits.length - 1]?.sha
-		);
-		try {
-			const octokit = await getAuthenticatedOctokit(State.installationId);
-			await octokit.rest.pulls.createReview({
-				owner: State.owner,
-				repo: State.repo,
-				pull_number: State.prNumber,
-				commit_id: State.commits[State.commits.length - 1]?.sha,
-				event: "COMMENT", // Post as a comment review
-				comments: comments, // Provide the array of collected comments
-			});
-			console.log("Successfully posted all review comments.");
-		} catch (error) {
-			console.error("Failed to submit review comments to GitHub", error);
+		console.log(`Posting ${comments.length} review comments to GitHub...`);
+		const octokit = await getAuthenticatedOctokit(State.installationId);
+
+		for (let i = 0; i < comments.length; i += BATCH_SIZE) {
+			const batch = comments.slice(i, i + BATCH_SIZE);
+			try {
+				await octokit.rest.pulls.createReview({
+					owner: State.owner,
+					repo: State.repoName,
+					pull_number: State.prNumber,
+					commit_id: State.commits.at(-1)?.sha,
+					event: "COMMENT",
+					comments: batch,
+				});
+			} catch (error: any) {
+				console.error("Failed to submit a batch of comments:", error);
+
+				return new Send("errorOccured", {
+					error: {
+						message: error.message || "GitHub review submission failed",
+						type: "review",
+					},
+				});
+			}
 		}
 	}
+
+	if (failedHunks.length > 0) {
+		console.warn(`${failedHunks.length} hunks failed to review.`);
+	}
+
 	return {};
 };
 

@@ -1,19 +1,26 @@
 import { getAuthenticatedOctokit } from "github-config";
 import { runGraphForPR } from "../graphs";
 
-export async function prCodeReviewChain(
+export async function prCodeReview(
 	prId: number,
 	installationId: number,
 	owner: string,
-	repo: string
+	repoId: string,
+	repoName: string
 ) {
 	const octokit = await getAuthenticatedOctokit(installationId);
 
-	const pr = await octokit.rest.pulls.get({
+	// const pr = await octokit.rest.pulls.get({
+	// 	owner,
+	// 	repo: repoId,
+	// 	pull_number: prId,
+	// });
+	await runGraphForPR({
+		installationId,
 		owner,
-		repo,
-		pull_number: prId,
+		prNumber: prId,
+		repoId,
+		repoName: repoName,
 	});
-	await runGraphForPR({ installationId, owner, prNumber: prId, repo });
 	console.log("is the graph chain ended");
 }

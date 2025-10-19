@@ -1,5 +1,4 @@
-import { embedRepoChain } from "./chains/embedRepo";
-import { prCodeReviewChain } from "./chains/codeReviewChain";
-import { deleteEmbededRepo } from "./chains/embedRepo";
+import { embedRepoChain, deleteEmbedRepo } from "./chains/embedRepo";
+import { prCodeReview } from "./chains/codeReviewChain";
 
-export { embedRepoChain, prCodeReviewChain, deleteEmbededRepo };
+export { embedRepoChain, prCodeReview, deleteEmbedRepo };

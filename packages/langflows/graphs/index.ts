@@ -1,28 +1,18 @@
-import { END, START } from "@langchain/langgraph";
-import { workflow } from "./graph";
+import { pullRequestWorkflow } from "./pullRequestGraph";
 
 interface GraphInitialStateProps {
 	owner: string;
-	repo: string;
+	repoId: string;
 	prNumber: number;
 	installationId: number;
+	repoName: string;
 }
 
 export const runGraphForPR = async (
 	graphInitialState: GraphInitialStateProps
 ) => {
-	console.log("THis is in run graph for pr");
-	workflow.addEdge(START, "retrievePRContent");
-	workflow.addEdge("retrievePRContent", "tabularPRFilesSummarize");
-	workflow.addEdge("tabularPRFilesSummarize", "checkBugsOrImprovement");
-	workflow.addConditionalEdges(
-		"checkBugsOrImprovement",
-		function shouldPublish(): string {
-			return END;
-		}
-	);
-	workflow.addEdge("checkBugsOrImprovement", END);
-	const app = workflow.compile();
-
-	app.invoke(graphInitialState);
+	const app = pullRequestWorkflow.compile();
+	app.invoke({
+		...graphInitialState,
+	});
 };
