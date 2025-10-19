@@ -7,37 +7,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id          String    @id @default(cuid())
-  githubId    String    @unique
-  username    String
-  email       String
-  image       String
-  activeRepos Int       @default(0)
-  planId      String
-  plan        Plan      @relation(fields: [planId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  repos       Repo[]
-  payments    Payment[]
-}
-
 enum ExistingPlan {
   FREE
   PRO
   ENTERPRISE
 }
 
-model Plan {
+model User {
   id          String       @id @default(cuid())
-  name        ExistingPlan @unique @default(FREE)
-  price       Float?
-  maxRepos    Int
-  description String
+  githubId    String       @unique
+  username    String
+  email       String
+  image       String
+  activeRepos Int          @default(0)
+  planName    ExistingPlan @default(FREE)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  users       User[]
+  repos       Repo[]
   payments    Payment[]
+}
+
+model Plan {
+  id                       String       @id @default(cuid())
+  name                     ExistingPlan @unique @default(FREE)
+  price                    Float?
+  maxRepos                 Int
+  aiReviewEnabled          Boolean      @default(false)
+  aiIssueTriageEnabled     Boolean      @default(false)
+  maxRepoIssueEmbedding    Int
+  issueEmbedEnabled        Boolean      @default(false)
+  pathConfigCustomization  Boolean      @default(false)
+  labelConfigCustomization Boolean      @default(false)
+  embeddingRepoContext     Boolean      @default(false)
+  maxMonthlyReview         Int          @default(50)
+  description              String
+  createdAt                DateTime     @default(now())
+  updatedAt                DateTime     @updatedAt
+  payments                 Payment[]
 }
 
 model Payment {
@@ -83,10 +89,22 @@ model RepoConfig {
   reviewConfigId String       @unique
   reviewConfig   ReviewConfig @relation(fields: [reviewConfigId], references: [id], onDelete: Cascade)
 
+  issueConfigId String      @unique
+  issueConfig   IssueConfig @relation(fields: [issueConfigId], references: [id])
+
   errorLogs RepoErrorLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model IssueConfig {
+  id                   String      @id @default(cuid())
+  autoTriage           Boolean     @default(false)
+  aiSuggestion         Boolean     @default(false)
+  aiIssueTriageEnabled Boolean     @default(false)
+  issueEmbedEnabled    Boolean     @default(false)
+  RepoConfig           RepoConfig?
 }
 
 enum Tone {
@@ -117,7 +135,7 @@ model GeneralConfig {
 
 model ReviewConfig {
   id                       String  @id @default(cuid())
-  aiReviewEnabled          Boolean @default(false)
+  aiReviewEnabled          Boolean @default(false) // not true for FREE Plan
   highLevelSummaryEnabled  Boolean @default(true)
   showWalkThrough          Boolean @default(true)
   abortOnClose             Boolean @default(true)
@@ -141,6 +159,7 @@ model PathConfig {
   reviewConfigId String?
 }
 
+// To match the label from Github and pass instruction to LLM model
 model LabelConfig {
   id             String        @id @default(cuid())
   label          String
