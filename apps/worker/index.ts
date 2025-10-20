@@ -2,7 +2,12 @@ import { Redis } from "ioredis";
 import { Worker } from "bullmq";
 import { logger } from "logger";
 import type { Job } from "bullmq";
-import { prCodeReview, deleteEmbedRepo, embedRepoChain } from "langflows";
+import {
+	runGraphForPR,
+	deleteEmbedRepo,
+	embedRepoChain,
+	runGraphForIssue,
+} from "langflows";
 
 export const redisConnection = new Redis(process.env.REDIS_URL!, {
 	maxRetriesPerRequest: null,
@@ -15,7 +20,17 @@ const repoWorker = new Worker(
 		switch (job.name) {
 			case "review": {
 				const { owner, prNumber, installationId, repoId, repoName } = job.data;
-				await prCodeReview(prNumber, installationId, owner, repoId, repoName);
+				await runGraphForPR({
+					prNumber,
+					installationId,
+					owner,
+					repoId,
+					repoName,
+				});
+				break;
+			}
+			case "issue-triage": {
+				await runGraphForIssue({ ...job.data });
 				break;
 			}
 
