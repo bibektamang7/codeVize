@@ -5,6 +5,7 @@ import { getChromaStore } from "./embed";
 import { embeddingModelName, embeddingModelUrl } from "../config";
 import { OllamaEmbeddings } from "@langchain/ollama";
 import { getAuthenticatedOctokit } from "github-config";
+import { Send } from "@langchain/langgraph";
 
 export const fetchRepoContext = async (state: typeof IssueGraphState.State) => {
 	try {
@@ -88,7 +89,7 @@ export const checkPreviousIssue = async (
 
 				logger.info(`Found similar issue: #${issueId}`);
 			}
-			return state;
+			return new Send("__end__", {});
 		}
 
 		logger.info("No similar issues found; moving to embedding stage.");

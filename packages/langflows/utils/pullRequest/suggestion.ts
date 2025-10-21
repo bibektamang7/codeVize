@@ -4,26 +4,11 @@ import type { PullRequestGraphState } from "../../graphs/pullRequestGraph";
 import { getCodeSuggestionModel } from "../codeSuggestionLLMFactory";
 import { suggestionSystemPrompt } from "../../prompts/reviewPrompt";
 import { Send } from "@langchain/langgraph";
+import { tryInvoke } from "../utils";
 
 const MAX_QUERY_LEN = 4000;
 const BATCH_SIZE = 10;
 const SIMILARITY_THRESHOLD = 0.75;
-
-const tryInvoke = async <T>(
-	fn: () => Promise<T>,
-	retries = 3,
-	delay = 1000
-): Promise<T> => {
-	for (let i = 0; i < retries; i++) {
-		try {
-			return await fn();
-		} catch (err) {
-			if (i < retries - 1)
-				await new Promise((res) => setTimeout(res, delay * (i + 1)));
-		}
-	}
-	throw new Error("Max retries reached");
-};
 
 export const checkBugsOrImprovement = async (
 	State: typeof PullRequestGraphState.State

@@ -1,3 +1,4 @@
+import { issueWorkflow } from "./issueGraph";
 import { pullRequestWorkflow } from "./pullRequestGraph";
 
 interface GraphInitialStateProps {
@@ -15,4 +16,20 @@ export const runGraphForPR = async (
 	app.invoke({
 		...graphInitialState,
 	});
+};
+interface IssueGraphInitialState {
+	installationId: number;
+	repoName: string;
+	repoId: string;
+	owner: string;
+	issueNumber: number;
+	title: string;
+	body: string;
+}
+
+export const runGraphForIssue = async (
+	initialState: IssueGraphInitialState
+) => {
+	const app = issueWorkflow.compile();
+	app.invoke({ ...initialState });
 };

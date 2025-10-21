@@ -8,6 +8,7 @@ import {
 	vectorDBSSL,
 } from "../config";
 import { OllamaEmbeddings } from "@langchain/ollama";
+import { Send } from "@langchain/langgraph";
 
 export const getChromaStore = ({
 	owner,
@@ -57,5 +58,8 @@ export const embedIssue = async (state: typeof IssueGraphState.State) => {
 
 		console.log(`✅ Embedded issue #${issueNumber} for repo ${repoName}`);
 		return state;
-	} catch (error) {}
+	} catch (error) {
+		console.warn(`Issue embedding failed: ${error}`);
+		return new Send("suggestLabels", { ...state });
+	}
 };

@@ -9,10 +9,10 @@ export const IssueGraphState = Annotation.Root({
 	repoName: Annotation<string>,
 	repoId: Annotation<string>,
 	owner: Annotation<string>,
-	repo: Annotation<Repo>,
 	issueNumber: Annotation<number>,
 	title: Annotation<string>,
 	body: Annotation<string>,
+	repo: Annotation<Repo>,
 	plan: Annotation<string>,
 	issueAnalysis: Annotation<IssueAnalysis>,
 });
@@ -25,10 +25,42 @@ export const issueWorkflow = new StateGraph(IssueGraphState)
 	.addConditionalEdges(
 		"fetchRepoContext",
 		(state: typeof IssueGraphState.State) => {
+			if (
+				state.repo.repoConfig &&
+				!state.repo.repoConfig.issueConfig.aiIssueTriageEnabled
+			) {
+				return "__end__";
+			}
 			if (state.plan === "FREE") {
 				return "suggestLabels";
 			}
 			return "checkPreviousIssue";
+		}
+	)
+	.addConditionalEdges(
+		"checkPreviousIssue",
+		(state: typeof IssueGraphState.State) => {
+			if (
+				state.repo.repoConfig &&
+				!state.repo.repoConfig.issueConfig.issueEmbedEnabled
+			) {
+				return state.repo.repoConfig.issueConfig.issueEmbedEnabled
+					? "suggestLabels"
+					: "__end__";
+			}
+			return "embeddingIssue";
+		}
+	)
+	.addConditionalEdges(
+		"embeddingIssue",
+		(state: typeof IssueGraphState.State) => {
+			if (
+				state.repo.repoConfig &&
+				!state.repo.repoConfig.issueConfig.aiIssueTriageEnabled
+			) {
+				return "__end__";
+			}
+			return "suggestLables";
 		}
 	)
 	.addEdge("fetchRepoContext", "__start__")

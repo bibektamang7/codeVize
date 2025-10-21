@@ -1,4 +1,4 @@
 import { embedRepoChain, deleteEmbedRepo } from "./chains/embedRepo";
-import { prCodeReview } from "./chains/codeReviewChain";
+import { runGraphForIssue, runGraphForPR } from "./graphs";
 
-export { embedRepoChain, prCodeReview, deleteEmbedRepo };
+export { embedRepoChain, runGraphForIssue, runGraphForPR, deleteEmbedRepo };

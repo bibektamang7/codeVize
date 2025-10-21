@@ -12,8 +12,6 @@ export interface Repo {
 		};
 		issueConfig: {
 			id: string;
-			autoTriage: boolean;
-			aiSuggestion: boolean;
 			aiIssueTriageEnabled: boolean;
 			issueEmbedEnabled: boolean;
 		};
@@ -41,6 +39,6 @@ export interface RepoError {
 }
 
 export interface IssueAnalysis {
-	category: string,
-	priority: string,
+	category: string;
+	priority: string;
 }
