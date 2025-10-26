@@ -54,7 +54,7 @@ const nextAuth = NextAuth({
 							username: githubProfile.login,
 							image: githubProfile.avatar_url,
 							githubId: githubProfile.id.toString(),
-							plan: { connect: { name: "FREE" } },
+							planName: "FREE",
 						},
 					});
 				}
