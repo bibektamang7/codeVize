@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { verifyJWTToken } from "jwt";
-import { prisma, prismaClient } from "db/prisma";
+import { prisma } from "db/prisma";
+import { ApiError } from "../utils/apiErrorHandler";
 
 interface DecodedToken {
 	id: string;
@@ -11,22 +12,26 @@ export const authMiddleware = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	const token =
-		req.headers.authorization?.split("Bearer ")[1] ||
-		req.cookies?.codevize_access_token;
+	try {
+		const token =
+			req.headers.authorization?.split("Bearer ")[1] ||
+			req.cookies?.codevize_access_token;
 
-	if (!token) {
-		return;
+		if (!token) {
+			return;
+		}
+		console.log("token", token);
+		const tokenDecoded = verifyJWTToken(token);
+		const user = await hasUser(tokenDecoded as DecodedToken);
+		if (!user) {
+			res.status(403).json({ message: "User not found!" });
+			return;
+		}
+		req.user = user;
+		next();
+	} catch (error: any) {
+		throw new ApiError(401, "Unauthorized access", [error.message]);
 	}
-	console.log("token", token)
-	const tokenDecoded = verifyJWTToken(token);
-	const user = await hasUser(tokenDecoded as DecodedToken);
-	if (!user) {
-		res.status(403).json({ message: "Unauthorized Request" });
-		return;
-	}
-	req.user = user;
-	next();
 };
 
 const hasUser = async (decodedToken: DecodedToken) => {
@@ -35,7 +40,7 @@ const hasUser = async (decodedToken: DecodedToken) => {
 			where: { id: decodedToken.id },
 			select: {
 				id: true,
-				plan: true,
+				planName: true,
 				activeRepos: true,
 			},
 		});

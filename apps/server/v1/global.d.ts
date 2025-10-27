@@ -1,7 +1,8 @@
 import type { Request } from "express";
 interface User {
 	id: string;
-	activeRepos: number,
+	activeRepos: number;
+	planName: string;
 	plan: {
 		id: string;
 		name: any;

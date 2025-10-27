@@ -1,64 +1,51 @@
 import type { Request, Response } from "express";
 import { prisma } from "db/prisma";
 import { getAuthenticatedOctokit } from "github-config";
+import { ApiError, asyncHandler } from "../utils/apiErrorHandler";
 
-
-export const getRepository = async (req: Request, res: Response) => {
-	const { repoId } = req.params;
-	try {
+export const getRepository = asyncHandler(
+	async (req: Request, res: Response) => {
+		const { repoId } = req.params;
 		const repo = await prisma.repo.findUnique({
 			where: {
 				id: repoId,
 			},
 			include: {
-				pullRequests: true,
 				repoConfig: {
 					include: {
 						generalConfig: true,
-						reviewConfig: {
-							include: {
-								pathConfigs: true,
-								labelConfigs: true
-							}
-						}
-					}
-				}
+						issueConfig: true,
+						reviewConfig: true,
+					},
+				},
 			},
 		});
 		if (!repo) {
-			console.error("Repo not found");
-			res.status(404).json({ message: "Repo not found" });
-			return;
+			throw new ApiError(404, "Repo not found");
 		}
-		res.status(200).json({ repo });
-		return;
-	} catch (error) {
-		console.error("Failed to retrieve repository", error);
-		res.status(500).json({ message: "Failed to retrieve repository" });
+		res.status(200).json({ success: true, repo });
 	}
-};
+);
 
-export const getAllRepositories = async (req: Request, res: Response) => {
-	try {
+export const getAllRepositories = asyncHandler(
+	async (req: Request, res: Response) => {
 		const repositories = await prisma.repo.findMany({
 			where: {
 				userId: req.user.id,
 			},
-			include: {
-				repoConfig: true
+			select: {
+				repoName: true,
+				id: true,
+				isActive: true,
 			},
 		});
-		res.status(200).json({ repositories });
-		return;
-	} catch (error) {
-		console.error("Failed to retrieve repositories", error);
-		res.status(500).json({ message: "Failed to retrieve repositories" });
+		res.status(200).json({ success: true, repositories: repositories || [] });
 	}
-};
+);
 
-export const deactivateRepository = async (req: Request, res: Response) => {
-	const { repoId } = req.params;
-	try {
+export const deactivateRepository = asyncHandler(
+	async (req: Request, res: Response) => {
+		const { repoId } = req.params;
 		const repo = await prisma.repo.findUnique({
 			where: {
 				id: repoId,
@@ -66,9 +53,7 @@ export const deactivateRepository = async (req: Request, res: Response) => {
 		});
 
 		if (!repo) {
-			console.error("Repo not found");
-			res.status(400).json({ messsage: "Repo not found" });
-			return;
+			throw new ApiError(400, "Repo not found");
 		}
 		const updatedRepo = await prisma.repo.update({
 			where: {
@@ -79,37 +64,33 @@ export const deactivateRepository = async (req: Request, res: Response) => {
 			},
 		});
 		if (!updatedRepo) {
-			console.error("Failed to update repo status");
-			res.status(400).json({ message: "Failed to update repo status" });
-			return;
+			throw new ApiError(400, "Failed to update repo status");
 		}
-		res.status(200).json({ message: "Repository uninstalled successfully" });
-		return;
-	} catch (error) {
-		console.error("Failed to uninstall repository", error);
-		res.status(500).json({ messsage: "Failed to uninstall repository" });
+		res
+			.status(200)
+			.json({ success: true, message: "Repository uninstalled successfully" });
 	}
-};
-export const activateRepository = async (req: Request, res: Response) => {
-	if (req.user.plan.maxRepos <= req.user.activeRepos) {
-		return res.status(403).json({
-			message: "You have reached the maximum number of repositories for your plan.",
-		});
-	}
-	const { repoId } = req.params;
-	try {
+);
+
+export const activateRepository = asyncHandler(
+	async (req: Request, res: Response) => {
+		if (req.user.plan.maxRepos <= req.user.activeRepos) {
+			throw new ApiError(
+				403,
+				"You have reached the maximum number of repositories for your plan."
+			);
+		}
+		const { repoId } = req.params;
 		const repo = await prisma.repo.findUnique({
 			where: {
 				id: repoId,
-				userId: req.user.id
+				userId: req.user.id,
 			},
 		});
 		if (!repo) {
-			console.error("Repo not found");
-			res.status(404).json({ message: "Repo not found" });
-			return;
+			throw new ApiError(404, "Repo not found");
 		}
-		
+
 		const updatedRepo = await prisma.repo.update({
 			where: {
 				id: repo.id,
@@ -120,34 +101,32 @@ export const activateRepository = async (req: Request, res: Response) => {
 		});
 
 		if (!updatedRepo) {
-			console.error("Failed to activate repo");
-			res.status(400).json({ message: "Failed to activate repo" });
-			return;
+			throw new ApiError(400, "Failed to activate repo");
 		}
 
 		// Increment user's active repo count
 		await prisma.user.update({
 			where: {
-				id: req.user.id
+				id: req.user.id,
 			},
 			data: {
 				activeRepos: {
-					increment: 1
-				}
-			}
+					increment: 1,
+				},
+			},
 		});
 
-		res.status(200).json({ message: "Repository activated successfully", repo: updatedRepo });
-		return;
-	} catch (error) {
-		console.error("Failed to activate repository", error);
-		res.status(500).json({ message: "Failed to activate repository" });
+		res.status(200).json({
+			success: true,
+			message: "Repository activated successfully",
+			repo: updatedRepo,
+		});
 	}
-};
+);
 
-export const deleteInstalledRepo = async (req: Request, res: Response) => {
-	const { repoId } = req.params;
-	try {
+export const deleteInstalledRepo = asyncHandler(
+	async (req: Request, res: Response) => {
+		const { repoId } = req.params;
 		const repo = await prisma.repo.findUnique({
 			where: {
 				id: repoId,
@@ -155,9 +134,10 @@ export const deleteInstalledRepo = async (req: Request, res: Response) => {
 		});
 
 		if (!repo) {
-			console.error("Repo not found");
-			res.status(200).json({ message: "Failed to find repo" });
-			return;
+			// Note: The original code was returning 200 for not found - keeping the same behavior
+			return res
+				.status(200)
+				.json({ success: true, message: "Failed to find repo" });
 		}
 		const installationId = Number(repo.installationId);
 		const octokit = await getAuthenticatedOctokit(installationId);
@@ -169,9 +149,7 @@ export const deleteInstalledRepo = async (req: Request, res: Response) => {
 			}
 		);
 		if (response.status !== 204) {
-			console.error("Failed to delete installation");
-			res.status(500).json({ message: "Failed to delete installation" });
-			return;
+			throw new ApiError(500, "Failed to delete installation");
 		}
 		await prisma.repo.delete({
 			where: {
@@ -180,15 +158,69 @@ export const deleteInstalledRepo = async (req: Request, res: Response) => {
 		});
 
 		if (!repo) {
-			console.error("Failed to delete repo from database");
-			res.status(500).json({ message: "Failed to delete repo" });
-			return;
+			throw new ApiError(500, "Failed to delete repo from database");
 		}
-		res.status(200).json({ messsage: "Repo deleted successfully" });
-		return;
-	} catch (error) {
-		console.error("Error deleting installed repo:", error);
-
-		res.status(500).json({ message: "Failed to delete installed repo" });
+		res
+			.status(200)
+			.json({ success: true, message: "Repo deleted successfully" });
 	}
-};
+);
+
+export const updateRepoConfig = asyncHandler(
+	async (req: Request, res: Response) => {
+		const { repoId } = req.params;
+		const { generalConfig, reviewConfig, issueConfig } = req.body;
+
+		const repoConfig = await prisma.repoConfig.findUnique({
+			where: { repoId },
+		});
+
+		if (!repoConfig) {
+			throw new ApiError(404, "Repository configuration not found");
+		}
+
+		// Update general config if provided
+		if (generalConfig) {
+			await prisma.generalConfig.update({
+				where: { id: repoConfig.generalConfigId },
+				data: generalConfig,
+			});
+		}
+
+		// Update review config if provided
+		if (reviewConfig) {
+			await prisma.reviewConfig.update({
+				where: { id: repoConfig.reviewConfigId },
+				data: reviewConfig,
+			});
+		}
+
+		// Update issue config if provided
+		if (issueConfig) {
+			await prisma.issueConfig.update({
+				where: { id: repoConfig.issueConfigId },
+				data: issueConfig,
+			});
+		}
+
+		// Return the updated repository configuration
+		const updatedRepo = await prisma.repo.findUnique({
+			where: { id: repoId },
+			include: {
+				repoConfig: {
+					include: {
+						generalConfig: true,
+						issueConfig: true,
+						reviewConfig: true,
+					},
+				},
+			},
+		});
+
+		if (!updatedRepo) {
+			throw new ApiError(404, "Repo not found");
+		}
+
+		res.status(200).json({ success: true, repo: updatedRepo });
+	}
+);

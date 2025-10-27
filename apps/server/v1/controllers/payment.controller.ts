@@ -1,102 +1,78 @@
 import type { Request, Response } from "express";
 import { prisma } from "db/prisma";
+import { ApiError, asyncHandler } from "../utils/apiErrorHandler";
 
-export const getAllPayments = async (req: Request, res: Response) => {
-  try {
-    const payments = await prisma.payment.findMany({
-      include: {
-        user: true,
-        plan: true
-      }
-    });
-
-    res.status(200).json({ payments });
-  } catch (error) {
-    console.error("Failed to retrieve payments", error);
-    res.status(500).json({ message: "Failed to retrieve payments" });
-  }
-};
-
-export const getPayment = async (req: Request, res: Response) => {
-  try {
-    const { paymentId } = req.params;
-    
-    const payment = await prisma.payment.findUnique({
-      where: {
-        id: paymentId,
-      },
-      include: {
-        user: true,
-        plan: true
-      }
-    });
-
-    if (!payment) {
-      return res.status(404).json({ message: "Payment not found" });
+export const getAllPayments = asyncHandler(async (req: Request, res: Response) => {
+  const payments = await prisma.payment.findMany({
+    include: {
+      user: true,
+      plan: true
     }
+  });
 
-    res.status(200).json({ payment });
-  } catch (error) {
-    console.error("Failed to retrieve payment", error);
-    res.status(500).json({ message: "Failed to retrieve payment" });
+  res.status(200).json({ success: true, payments });
+});
+
+export const getPayment = asyncHandler(async (req: Request, res: Response) => {
+  const { paymentId } = req.params;
+  
+  const payment = await prisma.payment.findUnique({
+    where: {
+      id: paymentId,
+    },
+    include: {
+      user: true,
+      plan: true
+    }
+  });
+
+  if (!payment) {
+    throw new ApiError(404, "Payment not found");
   }
-};
 
-export const createPayment = async (req: Request, res: Response) => {
-  try {
-    const { userId, status, amount, planId } = req.body;
+  res.status(200).json({ success: true, payment });
+});
 
-    const newPayment = await prisma.payment.create({
-      data: {
-        userId,
-        status,
-        amount,
-        planId
-      }
-    });
+export const createPayment = asyncHandler(async (req: Request, res: Response) => {
+  const { userId, status, amount, planId } = req.body;
 
-    res.status(201).json({ payment: newPayment });
-  } catch (error) {
-    console.error("Failed to create payment", error);
-    res.status(500).json({ message: "Failed to create payment" });
-  }
-};
+  const newPayment = await prisma.payment.create({
+    data: {
+      userId,
+      status,
+      amount,
+      planId
+    }
+  });
 
-export const updatePayment = async (req: Request, res: Response) => {
-  try {
-    const { paymentId } = req.params;
-    const { status, amount } = req.body;
+  res.status(201).json({ success: true, payment: newPayment });
+});
 
-    const updatedPayment = await prisma.payment.update({
-      where: {
-        id: paymentId,
-      },
-      data: {
-        ...(status && { status }),
-        ...(amount && { amount }),
-      },
-    });
+export const updatePayment = asyncHandler(async (req: Request, res: Response) => {
+  const { paymentId } = req.params;
+  const { status, amount } = req.body;
 
-    res.status(200).json({ payment: updatedPayment });
-  } catch (error) {
-    console.error("Failed to update payment", error);
-    res.status(500).json({ message: "Failed to update payment" });
-  }
-};
+  const updatedPayment = await prisma.payment.update({
+    where: {
+      id: paymentId,
+    },
+    data: {
+      ...(status && { status }),
+      ...(amount && { amount }),
+    },
+  });
 
-export const deletePayment = async (req: Request, res: Response) => {
-  try {
-    const { paymentId } = req.params;
-    
-    await prisma.payment.delete({
-      where: {
-        id: paymentId,
-      },
-    });
+  res.status(200).json({ success: true, payment: updatedPayment });
+});
 
-    res.status(200).json({ message: "Payment deleted successfully" });
-  } catch (error) {
-    console.error("Failed to delete payment", error);
-    res.status(500).json({ message: "Failed to delete payment" });
-  }
-};
+export const deletePayment = asyncHandler(async (req: Request, res: Response) => {
+  const { paymentId } = req.params;
+  
+  await prisma.payment.delete({
+    where: {
+      id: paymentId,
+    },
+  });
+
+  res.status(200).json({ success: true, message: "Payment deleted successfully" });
+});

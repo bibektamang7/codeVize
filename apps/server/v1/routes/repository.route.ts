@@ -6,18 +6,19 @@ import {
 	deactivateRepository,
 	activateRepository,
 	deleteInstalledRepo,
+	updateRepoConfig,
 } from "../controllers/repository.controller";
 
 const router = Router();
+router.use(authMiddleware);
 
-router.route("/repository/:repoId")
-  .get(authMiddleware, getRepository)
-  .delete(authMiddleware, deleteInstalledRepo);
-router.route("/repositories")
-  .get(authMiddleware, getAllRepositories);
-router.route("/repository/:repoId/activate")
-  .post(authMiddleware, activateRepository);
-router.route("/repository/:repoId/deactivate")
-  .post(authMiddleware, deactivateRepository);
+router
+	.route("/repository/:repoId")
+	.get(getRepository)
+	.delete(deleteInstalledRepo)
+	.patch(updateRepoConfig);
+router.route("/repository/:repoId/activate").post(activateRepository);
+router.route("/repository/:repoId/deactivate").post(deactivateRepository);
+router.route("/").get(getAllRepositories);
 
 export default router;
