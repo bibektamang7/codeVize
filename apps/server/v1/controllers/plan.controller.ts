@@ -2,22 +2,13 @@ import type { Request, Response } from "express";
 import { prisma } from "db/prisma";
 import { ApiError, asyncHandler } from "../utils/apiErrorHandler";
 
+export const createPlan = asyncHandler(async (req: Request, res: Response) => {
+	const newPlan = await prisma.plan.create({
+		data: { ...req.body },
+	});
 
-// export const createPlan = asyncHandler(async (req: Request, res: Response) => {
-// 	const { name, price, maxRepos, description } = req.body;
-
-// 	const newPlan = await prisma.plan.create({
-// 		data: {
-// 			name,
-// 			price,
-// 			maxRepos,
-// 			description,
-
-// 		},
-// 	});
-
-// 	res.status(201).json({ success: true, plan: newPlan });
-// });
+	res.status(201).json({ success: true, plan: newPlan });
+});
 
 export const updatePlan = asyncHandler(async (req: Request, res: Response) => {
 	const { planId } = req.params;
