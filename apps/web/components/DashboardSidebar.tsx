@@ -1,3 +1,4 @@
+import { CodeXml } from "lucide-react";
 import Link from "next/link";
 import {
 	Sidebar,
@@ -43,14 +44,14 @@ const DashboardSidebar = () => {
 				<div className="flex items-center gap-3 p-3">
 					<Avatar className="size-8">
 						<AvatarImage
-							src="/placeholder-user.jpg"
+							src="/code.png"
 							alt="User"
 						/>
 						<AvatarFallback>U</AvatarFallback>
 					</Avatar>
 					<div className="flex flex-col">
-						<h2 className="text-lg font-semibold">Bibek7here</h2>
-						<p className="text-sm text-muted-foreground">Change Organization</p>
+						<h2 className="text-lg font-semibold">CodeVize</h2>
+						{/* <p className="text-sm text-muted-foreground">Change Organization</p> */}
 					</div>
 				</div>
 			</SidebarHeader>

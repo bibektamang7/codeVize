@@ -1,25 +1,21 @@
 import React from "react";
 import DashboardPage from "@/pages/Dashboard";
-import { SessionProvider } from "next-auth/react";
 import axios from "axios";
 import { auth } from "@/app/api/auth/[...nextauth]/auth";
+import { redirect } from "next/navigation";
 
 const page = async () => {
 	const session = await auth();
-	if (!session || !session.accessToken) {
-		return;
+	if (!session || !session.user?.token) {
+		redirect("/login");
 	}
-	const response = await axios.get(`${process.env.BACKEND_URL}`, {
+	const response = await axios.get(`${process.env.BACKEND_URL}/repositories/`, {
 		headers: {
-			Authorization: `Bearer ${session.accessToken}`,
+			Authorization: `Bearer ${session.user.token}`,
 		},
 	});
 
-	return (
-		<SessionProvider>
-			<DashboardPage repositories={response.data || []} />
-		</SessionProvider>
-	);
+	return <DashboardPage repositories={response.data.repositories || []} />;
 };
 
 export default page;

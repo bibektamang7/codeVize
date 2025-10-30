@@ -1,7 +1,19 @@
 import NextAuth, { NextAuthResult, Profile } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
-import { prismaClient } from "db/prisma";
-import jwt from "jsonwebtoken";
+import { retryApiCall, CircuitBreaker } from "@/lib/utils";
+import axios from "axios";
+
+const apiClient = axios.create({
+	timeout: 10000,
+});
+
+const circuitBreaker = new CircuitBreaker();
+
+const backendURL = process.env.BACKEND_URL;
+
+if (!backendURL) {
+	console.error("BACKEND_BASE_URL environment variable is not set");
+}
 
 type GithubProfile = Profile & {
 	login: string;
@@ -28,12 +40,12 @@ const nextAuth = NextAuth({
 	],
 	session: {
 		strategy: "jwt",
-		maxAge: 60 * 60 * 24 * 7, // 7 days
+		maxAge: 60 * 60 * 24 * 7,
 	},
 	secret: process.env.AUTH_SECRET,
 
 	callbacks: {
-		async signIn({ account, profile }) {
+		async signIn({ account, profile, user }) {
 			if (account?.provider !== "github") return true;
 
 			const githubProfile = profile as GithubProfile;
@@ -43,46 +55,75 @@ const nextAuth = NextAuth({
 			}
 
 			try {
-				let githubUser = await prismaClient.user.findUnique({
-					where: { githubId: githubProfile.id.toString() },
-				});
-
-				if (!githubUser) {
-					githubUser = await prismaClient.user.create({
-						data: {
+				console.log("this is backend url", backendURL);
+				const loginResponse = await retryApiCall(() =>
+					circuitBreaker.call(() =>
+						apiClient.post(`${backendURL}/users/login`, {
+							githubId: githubProfile.id,
 							email: githubProfile.email,
-							username: githubProfile.login,
-							image: githubProfile.avatar_url,
-							githubId: githubProfile.id.toString(),
-							planName: "FREE",
-						},
-					});
-				}
+						})
+					)
+				);
+				console.log("Login in successfull for user", loginResponse.data.user);
+				user.id = loginResponse.data.user.id;
+				user.token = loginResponse.data.token;
+				user.plan = loginResponse.data.user.planName;
+			} catch (error: any) {
+				console.error(`Login failed for user: ${githubProfile.email}`, error);
 
-				(account as any).dbUser = githubUser;
-				return true;
-			} catch (err) {
-				console.error("Error during GitHub OAuth signIn:", err);
-				return false; // Block login gracefully
+				if (
+					error.response &&
+					(error.response.status === 404 || error.response.status === 400)
+				) {
+					try {
+						console.log(
+							`Attempting to register user: ${githubProfile.email}`,
+							backendURL
+						);
+
+						const signUpResponse = await retryApiCall(() =>
+							circuitBreaker.call(() =>
+								apiClient.post(`${backendURL}/users/register`, {
+									githubId: githubProfile.id,
+									email: githubProfile.email,
+									username: githubProfile.login,
+									image: githubProfile.avatar_url,
+								})
+							)
+						);
+
+						console.log(
+							`Registration successful for user: ${signUpResponse.data.user}`
+						);
+						user.id = signUpResponse.data.user.id;
+						user.token = signUpResponse.data.token;
+						user.plan = signUpResponse.data.user.planName;
+					} catch (registerError: any) {
+						console.error(
+							`Registration failed for user: ${githubProfile.email}`,
+							registerError.message || registerError
+						);
+						return false;
+					}
+				} else {
+					return false;
+				}
 			}
+			return true;
 		},
 
-		async jwt({ token, account }) {
-			// Only enrich token on sign-in
-			if (account && (account as any).dbUser) {
-				const dbUser = (account as any).dbUser;
-
-				token.id = dbUser.id;
-				token.email = dbUser.email;
-				token.name = dbUser.username;
-				token.picture = dbUser.image;
-
-				if (process.env.TOKEN_SECRET) {
-					token.accessToken = jwt.sign(
-						{ id: dbUser.id },
-						process.env.TOKEN_SECRET,
-						{ expiresIn: "7d" }
-					);
+		async jwt({ token, account, user, profile }) {
+			if (account && profile) {
+				const githubProfile = profile as GithubProfile;
+				token.id = user.id;
+				token.email = githubProfile.email;
+				token.name = githubProfile.login;
+				token.picture = githubProfile.avatar_url;
+				if (user?.token) {
+					token.accessToken = user.token;
+				}
+				if (user.plan) {
+					token.plan = user.plan;
 				}
 			}
 			return token;
@@ -94,9 +135,13 @@ const nextAuth = NextAuth({
 				session.user.email = token.email as string;
 				session.user.name = token.name as string;
 				session.user.image = token.picture as string;
+				session.user.token = token.accessToken as string;
 			}
 			if (token.accessToken) {
 				(session as any).accessToken = token.accessToken as string;
+			}
+			if (token.plan) {
+				(session as any).user.plan = token.plan;
 			}
 			return session;
 		},

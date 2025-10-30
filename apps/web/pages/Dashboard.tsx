@@ -37,12 +37,16 @@ const DashboardPage = ({ repositories }: DashboardPageProps) => {
 				<header className="mb-6">
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 						<div>
-							<h1 className="text-2xl md:text-3xl font-bold">Your Repositories</h1>
-							<p className="text-muted-foreground mt-1">Manage and configure your connected repositories</p>
+							<h1 className="text-2xl md:text-3xl font-bold">
+								Your Repositories
+							</h1>
+							<p className="text-muted-foreground mt-1">
+								Manage and configure your connected repositories
+							</p>
 						</div>
 						<Button
 							onClick={handleConnectGithubApp}
-							className="bg-orange-500 hover:bg-orange-600"
+							className="bg-orange-500 hover:bg-orange-600 hover:cursor-pointer"
 							aria-label="Add Repository"
 						>
 							<Plus className="mr-2 h-4 w-4" /> Add Repository
@@ -50,9 +54,12 @@ const DashboardPage = ({ repositories }: DashboardPageProps) => {
 					</div>
 				</header>
 
-				<div className="mb-6 flex items-center gap-2 max-w-md mx-auto w-full">
+				<div className="mb-6 flex items-center gap-2 max-w-md w-full">
 					<div className="relative flex-1">
-						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+						<Search
+							className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground"
+							aria-hidden="true"
+						/>
 						<Input
 							placeholder="Search repositories..."
 							value={search}
@@ -63,8 +70,17 @@ const DashboardPage = ({ repositories }: DashboardPageProps) => {
 					</div>
 				</div>
 
-				<Card className="bg-card border-border shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl" role="region" aria-labelledby="repositories-heading">
-					<h2 id="repositories-heading" className="sr-only">Repositories List</h2>
+				<Card
+					className="bg-card border-border shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl"
+					role="region"
+					aria-labelledby="repositories-heading"
+				>
+					<h2
+						id="repositories-heading"
+						className="sr-only"
+					>
+						Repositories List
+					</h2>
 					<CardContent className="p-0">
 						{filteredRepos.length > 0 ? (
 							<div className="divide-y divide-border">
@@ -75,16 +91,31 @@ const DashboardPage = ({ repositories }: DashboardPageProps) => {
 										className="block p-4 transition-colors hover:bg-accent hover:text-accent-foreground duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
 										aria-label={`Navigate to ${repo.repoName} settings`}
 									>
-										<div role="listitem" className="flex items-center justify-between w-full">
+										<div
+											role="listitem"
+											className="flex items-center justify-between w-full"
+										>
 											<div className="flex items-center gap-3">
-												<GitBranch className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-												<span className="font-semibold truncate max-w-xs md:max-w-md" aria-label={`Repository name: ${repo.repoName}`}>{repo.repoName}</span>
+												<GitBranch
+													className="h-5 w-5 text-muted-foreground"
+													aria-hidden="true"
+												/>
+												<span
+													className="font-semibold truncate max-w-xs md:max-w-md"
+													aria-label={`Repository name: ${repo.repoName}`}
+												>
+													{repo.repoName}
+												</span>
 											</div>
 											<div className="flex items-center gap-2 text-sm text-muted-foreground">
-												<span 
-													className={`h-3 w-3 rounded-full ${repo.isActive ? 'bg-green-500' : 'bg-gray-400'}`} 
-													aria-label={repo.isActive ? 'Active repository' : 'Inactive repository'}
-													title={repo.isActive ? 'Active' : 'Inactive'}
+												<span
+													className={`h-3 w-3 rounded-full ${repo.isActive ? "bg-green-500" : "bg-gray-400"}`}
+													aria-label={
+														repo.isActive
+															? "Active repository"
+															: "Inactive repository"
+													}
+													title={repo.isActive ? "Active" : "Inactive"}
 												></span>
 												<Button
 													variant="ghost"
@@ -97,7 +128,10 @@ const DashboardPage = ({ repositories }: DashboardPageProps) => {
 													}}
 													className="p-2 h-auto w-auto"
 												>
-													<Settings className="h-4 w-4" aria-hidden="true" />
+													<Settings
+														className="h-4 w-4"
+														aria-hidden="true"
+													/>
 												</Button>
 											</div>
 										</div>
@@ -105,18 +139,28 @@ const DashboardPage = ({ repositories }: DashboardPageProps) => {
 								))}
 							</div>
 						) : (
-							<div role="alert" className="py-16 text-center flex flex-col items-center justify-center gap-4">
+							<div
+								role="alert"
+								className="py-16 text-center flex flex-col items-center justify-center gap-4"
+							>
 								<div className="flex flex-col items-center justify-center gap-3 p-6 max-w-md mx-auto">
-									<ShieldX className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
-									<h3 className="text-xl font-semibold">No repositories found</h3>
+									<ShieldX
+										className="h-12 w-12 text-muted-foreground"
+										aria-hidden="true"
+									/>
+									<h3 className="text-xl font-semibold">
+										No repositories found
+									</h3>
 									<p className="text-muted-foreground text-center">
-										{search ? "No repositories match your search. Try a different term." : "You haven't connected any repositories yet."}
+										{search
+											? "No repositories match your search. Try a different term."
+											: "You haven't connected any repositories yet."}
 									</p>
 									{!search && (
 										<Button
 											onClick={handleConnectGithubApp}
 											variant="outline"
-											className="mt-4 w-full sm:w-auto bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 border-orange-500/30"
+											className="mt-4 w-full sm:w-auto hover:cursor-pointer bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 border-orange-500/30"
 											aria-label="Connect a new repository"
 										>
 											<Plus className="mr-2 h-4 w-4" /> Connect a Repository
@@ -148,7 +192,9 @@ export const RepositorySettings = () => {
 			<main className="flex-1 p-6 md:p-8 max-w-6xl mx-auto w-full">
 				<div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
 					<h1 className="text-2xl font-bold">Ineuron-course</h1>
-					<Button className="bg-orange-500 hover:bg-orange-600">Apply Changes</Button>
+					<Button className="bg-orange-500 hover:bg-orange-600">
+						Apply Changes
+					</Button>
 				</div>
 
 				<Tabs
@@ -198,7 +244,8 @@ export const RepositorySettings = () => {
 										className="w-full max-w-md"
 									/>
 									<p className="text-xs text-muted-foreground mt-1">
-										Define the tone to be used in AI responses for this repository
+										Define the tone to be used in AI responses for this
+										repository
 									</p>
 								</div>
 

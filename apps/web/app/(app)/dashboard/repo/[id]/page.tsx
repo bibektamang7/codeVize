@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -12,13 +13,16 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { BadgeAlert } from "lucide-react";
+import { useSession } from "next-auth/react";
+import axios from "axios";
+import React from "react";
+import { redirect, useParams, useRouter } from "next/navigation";
 
 type PlanType = "FREE" | "PRO" | "ENTERPRISE" | null;
 
@@ -52,11 +56,9 @@ interface SelectSetting extends BaseSetting {
 }
 
 type Setting = SwitchSetting | InputSetting | SelectSetting;
-
 interface SettingsSection {
 	[key: string]: Setting[];
 }
-
 interface SettingsValues {
 	[key: string]: string | boolean;
 }
@@ -176,7 +178,7 @@ const SettingsCard: React.FC<{
 	title: string;
 	settings: Setting[];
 	stateValues: SettingsValues;
-	setStateValues: React.Dispatch<React.SetStateAction<SettingsValues>> | null;
+	setStateValues: React.Dispatch<React.SetStateAction<SettingsValues>>;
 	isProOrEnterprise: boolean;
 	isEnterprise: boolean;
 }> = ({
@@ -188,9 +190,7 @@ const SettingsCard: React.FC<{
 	isEnterprise,
 }) => {
 	const updateState = (id: string, value: string | boolean) => {
-		if (setStateValues) {
-			setStateValues((prev) => ({ ...prev, [id]: value }));
-		}
+		setStateValues((prev) => ({ ...prev, [id]: value }));
 	};
 
 	const renderSettingField = (setting: Setting) => {
@@ -204,7 +204,7 @@ const SettingsCard: React.FC<{
 				return (
 					<Switch
 						id={id}
-						checked={(stateValues?.[id] as boolean) ?? true}
+						checked={!isDisabled && (stateValues[id] as boolean)}
 						onCheckedChange={(value) => updateState(id, value)}
 						disabled={isDisabled}
 					/>
@@ -214,8 +214,7 @@ const SettingsCard: React.FC<{
 					<Input
 						id={id}
 						type={(setting as InputSetting).inputType || "text"}
-						defaultValue={(setting as InputSetting).defaultValue}
-						value={(stateValues?.[id] as string) || ""}
+						value={(stateValues[id] as string) || ""}
 						onChange={(e) => updateState(id, e.target.value)}
 						disabled={isDisabled}
 						className="w-full sm:w-[300px] bg-gray-900 border-gray-700"
@@ -224,13 +223,11 @@ const SettingsCard: React.FC<{
 			case "select":
 				return (
 					<Select
-						defaultValue={(setting as SelectSetting).defaultValue || (setting as SelectSetting).selectOptions?.[0]?.value}
+						value={(stateValues[id] as string) || ""}
 						onValueChange={(value) => updateState(id, value)}
+						disabled={isDisabled}
 					>
-						<SelectTrigger
-							id={id}
-							className="w-full sm:w-[180px] bg-gray-900 border-gray-700"
-						>
+						<SelectTrigger className="w-full sm:w-[180px] bg-gray-900 border-gray-700">
 							<SelectValue placeholder="Select option" />
 						</SelectTrigger>
 						<SelectContent className="bg-gray-900 border-gray-700">
@@ -277,7 +274,7 @@ const SettingsCard: React.FC<{
 									<TooltipTrigger asChild>
 										<BadgeAlert
 											size={14}
-											className={`${isDisabled ? "text-gray-600" : "text-gray-400"}`}
+											className={isDisabled ? "text-gray-600" : "text-gray-400"}
 										/>
 									</TooltipTrigger>
 									<TooltipContent>
@@ -296,42 +293,95 @@ const SettingsCard: React.FC<{
 	);
 };
 
-export default function RepoSettingsPage({
-	params,
-}: {
-	params: { id: string };
-}) {
-	// const { plan } = useGetUserPlan();
-	const plan = { name: "ENTERPRISE" };
-	const [settingsValues, setSettingsValues] = useState<SettingsValues>({
-		"tone-instructions": "",
-		"early-access": false,
-		"enable-free-tier": true,
-	});
+const RepoSettingsPage = ({ params }: { params: Promise<{ id: string }> }) => {
+	const { id } = React.use<{ id: string }>(params);
 
-	// Determine which features are available based on user plan
-	const isProOrEnterprise = plan?.name === "PRO" || plan?.name === "ENTERPRISE";
-	const isEnterprise = plan?.name === "ENTERPRISE";
+	const { data: session } = useSession();
+	const plan = session?.user?.plan as PlanType;
+	const isProOrEnterprise = plan === "PRO" || plan === "ENTERPRISE";
+	const isEnterprise = plan === "ENTERPRISE";
+
+	const [settingsValues, setSettingsValues] = useState<SettingsValues>({});
+	const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		const fetchRepoSettings = async () => {
+			try {
+				const res = await axios.get(
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/repositories/repository/${id}`,
+					{
+						headers: {
+							Authorization: `Bearer ${session?.user?.token}`,
+						},
+					}
+				);
+				const { repo } = res.data;
+
+				console.log("this is repo setting", repo);
+				const merged: SettingsValues = {
+					"tone-instructions": repo.generalConfig?.tone || "",
+					"early-access": repo.generalConfig?.earlyAccess || false,
+					"enable-free-tier": repo.generalConfig?.enableFreeTier || true,
+					"ai-review-enabled": repo.reviewConfig?.aiReviewEnabled || false,
+					"abort-on-close": repo.reviewConfig?.abortOnClose || false,
+					"progress-fortune":
+						repo.reviewConfig?.isProgressFortuneEnabled || false,
+					"poem-on-review": repo.reviewConfig?.poemEnabled || false,
+					"high-level-summary":
+						repo.reviewConfig?.highLevelSummaryEnabled || false,
+					"show-walkthrough": repo.reviewConfig?.showWalkThrough || false,
+					"embedding-enabled": repo.issueConfig?.issueEmbedEnabled || false,
+					"max-embeddings":
+						repo.plan?.maxRepoIssueEmbedding?.toString() || "1000",
+					"model-selection": repo.generalConfig?.defaultModel || "gpt-4",
+					"generation-max-tokens": "4096",
+				};
+
+				Object.keys(merged).forEach((key) => {
+					const configSection = Object.values(settingsConfig).flat();
+					const matched = configSection.find((s) => s.id === key);
+					if (matched) {
+						if (
+							(matched.planRequired === "PRO" && !isProOrEnterprise) ||
+							(matched.planRequired === "ENTERPRISE" && !isEnterprise)
+						) {
+							merged[key] = typeof merged[key] === "boolean" ? false : "";
+						}
+					}
+				});
+
+				setSettingsValues(merged);
+			} catch (err) {
+				console.error("Failed to fetch settings", err);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchRepoSettings();
+	}, [id, isProOrEnterprise, isEnterprise]);
 
 	const handleApplyChanges = async () => {
-		// Dummy API call for applying changes
-		console.log("Applying changes...");
-		console.log(settingsValues);
-
-		// In a real implementation, this would make an actual API call
-		// await fetch(`/api/repo/${params.id}/settings`, {
-		//   method: "POST",
-		//   headers: { "Content-Type": "application/json" },
-		//   body: JSON.stringify(settingsValues)
-		// });
-
+		console.log("Applying changes:", settingsValues);
+		await axios.patch(
+			`${process.env.NEXT_PUBLIC_BACKEND_URL}/repositories/repository/${id}`,
+			{
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(settingsValues),
+			}
+		);
 		alert("Changes applied successfully!");
 	};
+
+	if (loading)
+		return (
+			<div className="p-6 text-gray-400">Loading repository settings...</div>
+		);
 
 	return (
 		<div className="flex-1 p-6">
 			<div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
-				<h1 className="text-2xl font-bold">{params.id}</h1>
+				<h1 className="text-2xl font-bold">{id}</h1>
 				<Button
 					onClick={handleApplyChanges}
 					className="bg-primary hover:bg-orange-600 w-full sm:w-auto"
@@ -339,6 +389,7 @@ export default function RepoSettingsPage({
 					Apply Changes
 				</Button>
 			</div>
+
 			<Tabs
 				defaultValue="general"
 				className="w-full"
@@ -350,62 +401,25 @@ export default function RepoSettingsPage({
 					<TabsTrigger value="code-generation">Code Generation</TabsTrigger>
 				</TabsList>
 
-				<TabsContent
-					value="general"
-					className="space-y-6"
-				>
-					<SettingsCard
-						title="General Settings"
-						settings={settingsConfig.general!}
-						stateValues={settingsValues}
-						setStateValues={setSettingsValues}
-						isProOrEnterprise={isProOrEnterprise}
-						isEnterprise={isEnterprise}
-					/>
-				</TabsContent>
-
-				<TabsContent
-					value="review"
-					className="space-y-6"
-				>
-					<SettingsCard
-						title="Review Settings"
-						settings={settingsConfig.review!}
-						stateValues={{}}
-						setStateValues={null}
-						isProOrEnterprise={isProOrEnterprise}
-						isEnterprise={isEnterprise}
-					/>
-				</TabsContent>
-
-				<TabsContent
-					value="knowledge-base"
-					className="space-y-6"
-				>
-					<SettingsCard
-						title="Knowledge Base Settings"
-						settings={settingsConfig["knowledge-base"]!}
-						stateValues={{}}
-						setStateValues={null}
-						isProOrEnterprise={isProOrEnterprise}
-						isEnterprise={isEnterprise}
-					/>
-				</TabsContent>
-
-				<TabsContent
-					value="code-generation"
-					className="space-y-6"
-				>
-					<SettingsCard
-						title="Code Generation Settings"
-						settings={settingsConfig["code-generation"]!}
-						stateValues={{}}
-						setStateValues={null}
-						isProOrEnterprise={isProOrEnterprise}
-						isEnterprise={isEnterprise}
-					/>
-				</TabsContent>
+				{Object.entries(settingsConfig).map(([sectionKey, sectionSettings]) => (
+					<TabsContent
+						key={sectionKey}
+						value={sectionKey}
+						className="space-y-6"
+					>
+						<SettingsCard
+							title={`${sectionKey.replace("-", " ")} Settings`}
+							settings={sectionSettings}
+							stateValues={settingsValues}
+							setStateValues={setSettingsValues}
+							isProOrEnterprise={isProOrEnterprise}
+							isEnterprise={isEnterprise}
+						/>
+					</TabsContent>
+				))}
 			</Tabs>
 		</div>
 	);
-}
+};
+
+export default RepoSettingsPage;
