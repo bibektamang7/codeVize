@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import {
-	// getAllPlans,
+	getAllPlans,
 	// getPlan,
 	createPlan,
 	updatePlan,
@@ -11,10 +11,7 @@ import {
 const router = Router();
 // router.use(authMiddleware);
 
-router
-	.route("/")
-	// .get(getAllPlans)
-	.post(createPlan);
+router.route("/").get(getAllPlans).post(createPlan);
 router.route("/plan/:planId").put(updatePlan).delete(deletePlan);
 // .get(getPlan);
 

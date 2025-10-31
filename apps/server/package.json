@@ -20,13 +20,14 @@
 		"@langchain/ollama": "^0.2.3",
 		"body-parser": "^2.2.0",
 		"cors": "^2.8.5",
+		"date-fns": "^4.1.0",
 		"db": "*",
 		"express": "^5.1.0",
 		"github-config": "*",
 		"jwt": "*",
 		"langchain": "^0.3.30",
+		"langflows": "*",
 		"simple-git": "^3.28.0",
-		"zod-config": "*",
-		"langflows": "*"
+		"zod-config": "*"
 	}
 }

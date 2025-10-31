@@ -1,8 +1,14 @@
 import express from "express";
 import cors from "cors";
 import { errorHandler } from "./v1/utils/apiErrorHandler";
+import { githubApp, createNodeMiddleware } from "github-config";
 
 const app = express();
+const middleware = createNodeMiddleware(githubApp.webhooks, {
+	path: "/api/v1/githubs/webhook",
+});
+
+app.use(middleware);
 
 // const ALLOWED_HEADERS = process.env.ALLOWED_HEADERS;
 app.use(
@@ -28,19 +34,9 @@ app.use("/api/v1/repositories", repositoryRouter);
 app.use("/api/v1/plans", planRouter);
 app.use("/api/v1/payments", paymentRouter);
 
-import { githubApp, createNodeMiddleware } from "github-config";
-
-const middleware = createNodeMiddleware(githubApp.webhooks, {
-	path: "/api/v1/githubs/webhook",
-});
-
-app.use(middleware);
-
-// Global error handling middleware - must be registered after all routes
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
 	console.log(`Application is listening at ${PORT}`);
 });
-

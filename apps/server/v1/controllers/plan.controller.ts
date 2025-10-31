@@ -10,6 +10,14 @@ export const createPlan = asyncHandler(async (req: Request, res: Response) => {
 	res.status(201).json({ success: true, plan: newPlan });
 });
 
+export const getAllPlans = asyncHandler(async (req: Request, res: Response) => {
+	const plans = await prisma.plan.findMany({
+		orderBy: {
+			price: "asc",
+		},
+	});
+	res.status(200).json({ plans });
+});
 export const updatePlan = asyncHandler(async (req: Request, res: Response) => {
 	const { planId } = req.params;
 	const { name, price, maxRepos, description } = req.body;

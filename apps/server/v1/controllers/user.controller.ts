@@ -4,7 +4,6 @@ import { ApiError, asyncHandler } from "../utils/apiErrorHandler";
 import { createToken } from "jwt";
 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
-	console.log("is it here or not", req.body.email);
 	const { githubId, email } = req.body;
 	if (!githubId || !email) {
 		throw new ApiError(400, "GithubId or email not provided");
@@ -14,12 +13,10 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 			githubId: String(githubId),
 		},
 	});
-	console.log("this is user email");
 
 	if (!user || user.email !== email) {
 		throw new ApiError(400, "Invalid user credentials");
 	}
-	console.log("where are you ");
 	const token = createToken(user.id);
 	if (!token) {
 		throw new ApiError(400, "Failed to create token, try again");
@@ -34,12 +31,14 @@ export const registerUser = asyncHandler(
 		}
 		const user = await prisma.user.findUnique({
 			where: {
-				githubId,
+				githubId: String(githubId),
 			},
 		});
+		console.log("this is user to find")
 		if (user) {
 			throw new ApiError(400, "User already exists");
 		}
+		console.log("this is user to create")
 		const createdUser = await prisma.user.create({
 			data: {
 				email,

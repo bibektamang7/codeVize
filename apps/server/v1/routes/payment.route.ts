@@ -6,12 +6,14 @@ import {
 	createPayment,
 	updatePayment,
 	deletePayment,
+	paymentCallback,
 } from "../controllers/payment.controller";
 
 const router = Router();
 router.use(authMiddleware);
 
-router.route("/payments").get(getAllPayments).post(createPayment);
+router.route("/").get(getAllPayments).post(createPayment);
+router.route("/payment/callback").patch(paymentCallback);
 router
 	.route("/payment/:paymentId")
 	.get(getPayment)

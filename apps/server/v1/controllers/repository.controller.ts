@@ -18,12 +18,14 @@ export const getRepository = asyncHandler(
 						reviewConfig: true,
 					},
 				},
+				user: { include: { plan: true } },
 			},
 		});
 		if (!repo) {
 			throw new ApiError(404, "Repo not found");
 		}
-		res.status(200).json({ success: true, repo });
+		res.status(200).json({ repo });
+		return;
 	}
 );
 

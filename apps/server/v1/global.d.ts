@@ -6,7 +6,7 @@ interface User {
 	plan: {
 		id: string;
 		name: any;
-		price: number;
+		price: number | null;
 		maxRepos: number;
 		description: string;
 		createdAt: Date;
