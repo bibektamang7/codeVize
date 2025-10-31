@@ -10,10 +10,11 @@ import {
 } from "../controllers/payment.controller";
 
 const router = Router();
+
+router.route("/payment/callback").patch(paymentCallback);
 router.use(authMiddleware);
 
 router.route("/").get(getAllPayments).post(createPayment);
-router.route("/payment/callback").patch(paymentCallback);
 router
 	.route("/payment/:paymentId")
 	.get(getPayment)

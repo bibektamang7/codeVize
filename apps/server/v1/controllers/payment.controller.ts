@@ -186,6 +186,7 @@ export const paymentCallback = asyncHandler(
 					},
 				});
 				plan = updatePayment.plan.name;
+				console.log("is it here or not");
 			});
 			res.status(200).json({ message: "Payment successful", plan });
 			return;
