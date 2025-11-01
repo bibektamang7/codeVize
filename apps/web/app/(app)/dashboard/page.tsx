@@ -19,7 +19,12 @@ const page = async ({
 		},
 	});
 
-	return <DashboardPage repositories={response.data.repositories || []} />;
+	return (
+		<DashboardPage
+			repositories={response.data.repositories || []}
+			token={session.user.token}
+		/>
+	);
 };
 
 export default page;

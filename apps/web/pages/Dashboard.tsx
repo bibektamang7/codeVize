@@ -12,22 +12,91 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Settings, Search, Plus, ShieldX, GitBranch } from "lucide-react";
+import {
+	Settings,
+	Search,
+	Plus,
+	ShieldX,
+	GitBranch,
+	MoreHorizontal,
+	Play,
+} from "lucide-react";
 import Link from "next/link";
 import { RepositoryProps } from "@/types/model.types";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useLoading } from "@/hooks/useLoading";
+import { repositoryAPI } from "@/lib/api";
+import LoaderComponent from "@/components/Loader";
 
 interface DashboardPageProps {
 	repositories: RepositoryProps[];
+	token: string;
 }
 
-const DashboardPage = ({ repositories }: DashboardPageProps) => {
+const DashboardPage = ({ repositories, token }: DashboardPageProps) => {
 	const [search, setSearch] = useState("");
+	const [repos, setRepos] = useState(repositories);
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [dialogType, setDialogType] = useState<"activate" | null>(null);
+	const [selectedRepo, setSelectedRepo] = useState<RepositoryProps | null>(
+		null
+	);
+
+	const toggleRepositoryActivationCall = useLoading(
+		(repoId: string, isActive: boolean) =>
+			isActive
+				? repositoryAPI.deactivateRepository(repoId, token)
+				: repositoryAPI.activateRepository(repoId, token),
+		"Repository status updated successfully!",
+		"Failed to update repository status"
+	);
 
 	const handleConnectGithubApp = () => {
 		const url = process.env.NEXT_PUBLIC_GITHUB_APP_URL;
 		window.location.href = `${url}/new?state=${"123"}`;
 	};
-	const filteredRepos = repositories.filter((r) =>
+
+	const handleToggleActivation = async (repo: RepositoryProps) => {
+		if (!repo.id) return;
+		await toggleRepositoryActivationCall.run(repo.id, repo.isActive);
+		setRepos((prev) =>
+			prev.map((prevRepo) =>
+				prevRepo.id === repo.id
+					? { ...prevRepo, isActive: !repo.isActive }
+					: prevRepo
+			)
+		);
+		setDialogOpen(false);
+		setSelectedRepo(null);
+	};
+
+	const openDialog = (type: "activate", repo: RepositoryProps) => {
+		setDialogType(type);
+		setSelectedRepo(repo);
+		setDialogOpen(true);
+	};
+
+	const closeDialog = () => {
+		setDialogOpen(false);
+		setSelectedRepo(null);
+	};
+
+	const filteredRepos = repos.filter((r) =>
 		r.repoName.toLowerCase().includes(search.toLowerCase())
 	);
 
@@ -85,17 +154,19 @@ const DashboardPage = ({ repositories }: DashboardPageProps) => {
 						{filteredRepos.length > 0 ? (
 							<div className="divide-y divide-border">
 								{filteredRepos.map((repo: RepositoryProps) => (
-									<Link
-										href={`/dashboard/repo/${repo.id}`}
+									<div
 										key={repo.repoId}
-										className="block p-4 transition-colors hover:bg-accent hover:text-accent-foreground duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
-										aria-label={`Navigate to ${repo.repoName} settings`}
+										className="flex items-center justify-between w-full p-4"
 									>
-										<div
-											role="listitem"
-											className="flex items-center justify-between w-full"
+										<Link
+											href={`/dashboard/repo/${repo.id}`}
+											className="flex-1 block transition-colors hover:bg-accent hover:text-accent-foreground duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg p-2 -m-2"
+											aria-label={`Navigate to ${repo.repoName} settings`}
 										>
-											<div className="flex items-center gap-3">
+											<div
+												role="listitem"
+												className="flex items-center gap-3"
+											>
 												<GitBranch
 													className="h-5 w-5 text-muted-foreground"
 													aria-hidden="true"
@@ -107,35 +178,56 @@ const DashboardPage = ({ repositories }: DashboardPageProps) => {
 													{repo.repoName}
 												</span>
 											</div>
-											<div className="flex items-center gap-2 text-sm text-muted-foreground">
-												<span
-													className={`h-3 w-3 rounded-full ${repo.isActive ? "bg-green-500" : "bg-gray-400"}`}
-													aria-label={
-														repo.isActive
-															? "Active repository"
-															: "Inactive repository"
-													}
-													title={repo.isActive ? "Active" : "Inactive"}
-												></span>
-												<Button
-													variant="ghost"
-													size="sm"
-													aria-label={`Settings for ${repo.repoName}`}
-													onClick={(e) => {
-														e.preventDefault();
-														// Navigate to settings page - we'll implement this later if needed
-														window.location.href = `/dashboard/repo/${repo.id}`;
-													}}
-													className="p-2 h-auto w-auto"
+										</Link>
+										<div className="flex items-center gap-2 text-sm text-muted-foreground">
+											<span
+												className={`h-3 w-3 rounded-full ${repo.isActive ? "bg-green-500" : "bg-gray-400"}`}
+												aria-label={
+													repo.isActive
+														? "Active repository"
+														: "Inactive repository"
+												}
+												title={repo.isActive ? "Active" : "Inactive"}
+											></span>
+											<DropdownMenu>
+												<DropdownMenuTrigger asChild>
+													<Button
+														variant="ghost"
+														size="sm"
+														aria-label={`Repository options for ${repo.repoName}`}
+														className="p-2 h-auto w-auto"
+													>
+														<MoreHorizontal
+															className="h-4 w-4"
+															aria-hidden="true"
+														/>
+													</Button>
+												</DropdownMenuTrigger>
+												<DropdownMenuContent
+													align="end"
+													className="dark"
 												>
-													<Settings
-														className="h-4 w-4"
-														aria-hidden="true"
-													/>
-												</Button>
-											</div>
+													<Link href={`/dashboard/repo/${repo.id}`}>
+														<DropdownMenuItem>
+															<Settings className="mr-2 h-4 w-4" />
+															<span>Settings</span>
+														</DropdownMenuItem>
+													</Link>
+													<DropdownMenuItem
+														onClick={() => openDialog("activate", repo)}
+														className="hover:cursor-pointer"
+													>
+														<Play className="mr-2 h-4 w-4" />
+														<span>
+															{repo.isActive
+																? "Deactivate Repository"
+																: "Activate Repository"}
+														</span>
+													</DropdownMenuItem>
+												</DropdownMenuContent>
+											</DropdownMenu>
 										</div>
-									</Link>
+									</div>
 								))}
 							</div>
 						) : (
@@ -172,6 +264,49 @@ const DashboardPage = ({ repositories }: DashboardPageProps) => {
 					</CardContent>
 				</Card>
 			</main>
+
+			<AlertDialog
+				open={dialogOpen && dialogType === "activate"}
+				onOpenChange={setDialogOpen}
+			>
+				<AlertDialogContent className="dark">
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							Confirm Repository Status Change
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							Are you sure you want to{" "}
+							{selectedRepo?.isActive ? "deactivate " : "activate "}
+							the repository "<strong>{selectedRepo?.repoName}</strong>"?
+							{selectedRepo?.isActive
+								? " This will stop all AI analysis and reviews for this repository."
+								: " This will start AI analysis and reviews for this repository."}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							onClick={closeDialog}
+							className="hover:cursor-pointer"
+						>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() => handleToggleActivation(selectedRepo!)}
+							disabled={toggleRepositoryActivationCall.loading}
+							className="hover:cursor-pointer"
+						>
+							{toggleRepositoryActivationCall.loading ? (
+								<LoaderComponent />
+							) : selectedRepo?.isActive ? (
+								"Deactivate"
+							) : (
+								"Activate"
+							)}{" "}
+							Repository
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</>
 	);
 };
