@@ -8,11 +8,8 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { getAvailablePlans, getUserSubscription } from "@/lib/actions";
-import {
-	subscribeToPlan,
-	initiateKhaltiPayment,
-} from "@/lib/subscription-actions";
+import { getAvailablePlans } from "@/lib/actions";
+import { subscribeToPlan } from "@/lib/subscription-actions";
 import { CheckCircle } from "lucide-react";
 import { auth } from "@/app/api/auth/[...nextauth]/auth";
 import Link from "next/link";
@@ -38,10 +35,8 @@ interface Plan {
 const SubscriptionPage = async () => {
 	const session = await auth();
 	const plans = await getAvailablePlans();
-	const userSubscription = await getUserSubscription();
-	const currentPlan = userSubscription?.planName;
+	const currentPlan = session?.user?.plan;
 
-	// Function to get features for each plan based on its properties
 	const getFeaturesForPlan = (plan: Plan) => {
 		const features = [];
 
@@ -78,7 +73,6 @@ const SubscriptionPage = async () => {
 
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
 				{plans.map((plan: Plan) => {
-					const planId = plan.name.toLowerCase();
 					const isPopular = plan.name === "PRO";
 					const isCurrentPlan = currentPlan === plan.name;
 
@@ -106,7 +100,9 @@ const SubscriptionPage = async () => {
 								<div className="mt-2">
 									{plan.price !== null ? (
 										<>
-											<span className="text-4xl font-bold">${plan.price}</span>
+											<span className="text-4xl font-bold">
+												Rs {plan.price}
+											</span>
 											<span className="text-muted-foreground">/month</span>
 										</>
 									) : (
@@ -155,39 +151,15 @@ const SubscriptionPage = async () => {
 									>
 										Current Plan
 									</Button>
-								) : plan.price === 0 ? (
-									<form
-										action={async () => {
-											"use server";
-											await subscribeToPlan(plan.id, 0);
-										}}
-									>
-										<Button
-											className={`w-full ${
-												isPopular
-													? "bg-indigo-600 hover:bg-indigo-500 text-white"
-													: "bg-white/10 hover:bg-white/20 text-white border border-white/10"
-											}`}
-											type="submit"
-										>
-											Get Started
-										</Button>
-									</form>
 								) : (
 									<form
 										action={async () => {
 											"use server";
-											if (plan.price) {
-												// In a real implementation, this would initiate Khalti payment
-												// await initiateKhaltiPayment(plan.id, plan.price * 100); // Convert to cents
-
-												// For demo purposes, we'll just subscribe directly
-												await subscribeToPlan(plan.id, plan.price * 100); // Convert to cents
-											}
+											await subscribeToPlan(plan.name);
 										}}
 									>
 										<Button
-											className={`w-full ${
+											className={`w-full hover:cursor-pointer ${
 												isPopular
 													? "bg-indigo-600 hover:bg-indigo-500 text-white"
 													: "bg-white/10 hover:bg-white/20 text-white border border-white/10"
@@ -199,10 +171,12 @@ const SubscriptionPage = async () => {
 									</form>
 								)}
 
-								{plan.price && plan.price > 0 && (
+								{plan.price && plan.price > 0 ? (
 									<p className="text-xs text-muted-foreground mt-2">
 										You will be redirected to a secure payment gateway
 									</p>
+								) : (
+									<p></p>
 								)}
 							</CardFooter>
 						</Card>

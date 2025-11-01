@@ -46,7 +46,7 @@ const DashboardPage = ({ repositories }: DashboardPageProps) => {
 						</div>
 						<Button
 							onClick={handleConnectGithubApp}
-							className="bg-orange-500 hover:bg-orange-600 hover:cursor-pointer"
+							className="bg-primary hover:cursor-pointer"
 							aria-label="Add Repository"
 						>
 							<Plus className="mr-2 h-4 w-4" /> Add Repository
@@ -160,7 +160,7 @@ const DashboardPage = ({ repositories }: DashboardPageProps) => {
 										<Button
 											onClick={handleConnectGithubApp}
 											variant="outline"
-											className="mt-4 w-full sm:w-auto hover:cursor-pointer bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 border-orange-500/30"
+											className="mt-4 w-full sm:w-auto hover:cursor-pointer bg-primary"
 											aria-label="Connect a new repository"
 										>
 											<Plus className="mr-2 h-4 w-4" /> Connect a Repository

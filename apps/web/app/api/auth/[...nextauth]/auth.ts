@@ -112,7 +112,12 @@ const nextAuth = NextAuth({
 			return true;
 		},
 
-		async jwt({ token, account, user, profile }) {
+		async jwt({ token, account, user, profile, trigger, session }) {
+			if (trigger === "update" && session.user) {
+				console.log("thisis callled after plan is update");
+				console.log("this is token and session", token);
+				return { ...token, ...session };
+			}
 			if (account && profile) {
 				const githubProfile = profile as GithubProfile;
 				token.id = user.id;

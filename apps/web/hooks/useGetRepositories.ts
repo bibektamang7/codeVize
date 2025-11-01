@@ -7,7 +7,7 @@ console.log("thisis bakcend url", backendBaseURL);
 
 export const useGetRepositories = () => {
 	const { data } = useSession();
-	console.log("thisi is dat",data)
+	console.log("thisi is dat", data);
 	const [repos, setRepos] = useState<RepositoryProps[]>([]);
 	const fetchRepositories = async () => {
 		const response = await axios.get(`${backendBaseURL}/users/repositories`, {
