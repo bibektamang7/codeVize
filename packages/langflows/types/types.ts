@@ -19,16 +19,18 @@ export interface Repo {
 			aiReviewEnabled: boolean;
 			highLevelSummaryEnabled: boolean;
 			showWalkThrough: boolean;
-			pathConfigs: {
-				pathPattern: string;
-				instructions?: string;
-				enabled: boolean;
-			}[];
-			labelConfigs: {
-				label: string;
-				instructions?: string;
-				enabled: boolean;
-			}[];
+			isProgressFortuneEnabled: boolean;
+			poemEnabled: boolean;
+			// pathConfigs: {
+			// 	pathPattern: string;
+			// 	instructions?: string;
+			// 	enabled: boolean;
+			// }[];
+			// labelConfigs: {
+			// 	label: string;
+			// 	instructions?: string;
+			// 	enabled: boolean;
+			// }[];
 		};
 	};
 }

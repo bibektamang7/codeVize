@@ -71,7 +71,8 @@ export const retrieveWithParents = async (options: {
 	let results: [Document, number][] = [];
 	try {
 		results = await chromaStore.similaritySearchVectorWithScore(
-			queryEmbedded,
+			//@ts-ignore
+			[queryEmbedded],
 			kPerQuery,
 			{
 				repoId: { $eq: `${owner}/${repo}` },
@@ -85,7 +86,6 @@ export const retrieveWithParents = async (options: {
 	const filtered = results.filter(([_, score]) => score >= similarityThreshold);
 	if (filtered.length === 0) return [];
 
-	// Group by parentId for structural context
 	const byParent = new Map<string, Document[]>();
 	for (const [doc] of filtered) {
 		const parentId = doc.metadata?.parentId || doc.metadata?.source || "root";
@@ -222,7 +222,6 @@ export const retrievePRFiles = async (
 				incrementalFile.filename === targetBranchFile.filename
 		);
 	});
-	console.log("this is files after filter", files);
 	if (files.length === 0) {
 		console.log("Skipped: files is null");
 		return;
@@ -247,8 +246,8 @@ export const retrievePRFiles = async (
 		console.log("Skipped: filteredSelectedFiles is null");
 		return;
 	}
-	// State.unReviewedFiles = filterSelectedFiles;
 	return {
+		...State,
 		unReviewedFiles: filterSelectedFiles,
 		commits: commits,
 	};

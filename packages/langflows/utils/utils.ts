@@ -37,6 +37,7 @@ export const tryInvoke = async <T>(
 		try {
 			return await fn();
 		} catch (err) {
+			console.log("this is error on suggestion", err)
 			if (i < retries - 1)
 				await new Promise((res) => setTimeout(res, delay * (i + 1)));
 		}

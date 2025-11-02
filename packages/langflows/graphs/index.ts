@@ -12,6 +12,7 @@ interface GraphInitialStateProps {
 export const runGraphForPR = async (
 	graphInitialState: GraphInitialStateProps
 ) => {
+	console.log("this is in run graph for pr")
 	const app = pullRequestWorkflow.compile();
 	app.invoke({
 		...graphInitialState,

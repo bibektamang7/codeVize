@@ -63,7 +63,7 @@ export const issueWorkflow = new StateGraph(IssueGraphState)
 			return "suggestLables";
 		}
 	)
-	.addEdge("fetchRepoContext", "__start__")
+	.addEdge("fetchRepoContext", "checkPreviousIssue")
 	.addEdge("checkPreviousIssue", "embeddingIssue")
 	.addEdge("embeddingIssue", "suggestLabels")
 	.addEdge("suggestLabels", "__end__");

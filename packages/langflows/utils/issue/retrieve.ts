@@ -31,6 +31,7 @@ export const fetchRepoContext = async (state: typeof IssueGraphState.State) => {
 			throw new Error("Repo not found");
 		}
 		return {
+			...state,
 			repo,
 			plan: repo.user.planName,
 		};
@@ -93,9 +94,9 @@ export const checkPreviousIssue = async (
 		}
 
 		logger.info("No similar issues found; moving to embedding stage.");
-		return state;
+		return { ...state };
 	} catch (error) {
 		logger.error("Error in checkPreviousIssue", error);
-		return state;
+		return { ...state };
 	}
 };

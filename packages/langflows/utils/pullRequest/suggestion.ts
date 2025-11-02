@@ -5,6 +5,7 @@ import { getCodeSuggestionModel } from "../codeSuggestionLLMFactory";
 import { suggestionSystemPrompt } from "../../prompts/reviewPrompt";
 import { Send } from "@langchain/langgraph";
 import { tryInvoke } from "../utils";
+import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 
 const MAX_QUERY_LEN = 4000;
 const BATCH_SIZE = 10;
@@ -13,6 +14,7 @@ const SIMILARITY_THRESHOLD = 0.75;
 export const checkBugsOrImprovement = async (
 	State: typeof PullRequestGraphState.State
 ) => {
+	console.log("after that")
 	const comments: any[] = [];
 	const filterSelectedFiles = State.unReviewedFiles;
 	if (!filterSelectedFiles?.length) {
@@ -82,12 +84,16 @@ Format your comment exactly as follows:
 			try {
 				const suggestionModel = getCodeSuggestionModel();
 
-				const suggestionResponse = await tryInvoke(() =>
-					suggestionModel.invoke([
-						{ role: "system", content: suggestionSystemPrompt },
-						{ role: "user", content: prompt },
-					])
-				);
+				const suggestionResponse = await suggestionModel.invoke([
+					{
+						role: "system",
+						content: suggestionSystemPrompt,
+					},
+					{
+						role: "human",
+						content: prompt,
+					},
+				]);
 
 				const suggestionText = suggestionResponse?.text?.trim();
 				if (!suggestionText || suggestionText.includes("Looks good")) continue;
@@ -105,6 +111,7 @@ Format your comment exactly as follows:
 				console.error("Failed to get suggestion:", error);
 
 				return new Send("errorOccured", {
+					...State,
 					error: {
 						message: error.message || "Failed to get suggestion",
 						type: "review",
@@ -133,6 +140,7 @@ Format your comment exactly as follows:
 				console.error("Failed to submit a batch of comments:", error);
 
 				return new Send("errorOccured", {
+					...State,
 					error: {
 						message: error.message || "GitHub review submission failed",
 						type: "review",
