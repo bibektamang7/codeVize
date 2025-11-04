@@ -426,7 +426,7 @@ export default function RepoSettingsClient({
 				<h1 className="text-2xl font-bold">{repoName}</h1>
 				<Button
 					onClick={() => run()}
-					className="hover:cursor-pointer bg-primary min-w-[120px] flex items-center justify-center"
+					className="hover:cursor-pointer min-w-[120px] flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white"
 				>
 					{loading ? <LoaderComponent /> : "Apply Changes"}
 				</Button>

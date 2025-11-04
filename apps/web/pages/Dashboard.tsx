@@ -115,7 +115,7 @@ const DashboardPage = ({ repositories, token }: DashboardPageProps) => {
 						</div>
 						<Button
 							onClick={handleConnectGithubApp}
-							className="bg-primary hover:cursor-pointer"
+							className="hover:cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white"
 							aria-label="Add Repository"
 						>
 							<Plus className="mr-2 h-4 w-4" /> Add Repository
@@ -155,12 +155,12 @@ const DashboardPage = ({ repositories, token }: DashboardPageProps) => {
 							<div className="divide-y divide-border">
 								{filteredRepos.map((repo: RepositoryProps) => (
 									<div
-										key={repo.repoId}
+										key={repo.id}
 										className="flex items-center justify-between w-full p-4"
 									>
 										<Link
 											href={`/dashboard/repo/${repo.id}`}
-											className="flex-1 block transition-colors hover:bg-accent hover:text-accent-foreground duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg p-2 -m-2"
+											className="flex-1 block transition-colors hover:bg-accent hover:text-accent-foreground duration-200 rounded-lg p-2 -m-2"
 											aria-label={`Navigate to ${repo.repoName} settings`}
 										>
 											<div
@@ -179,7 +179,7 @@ const DashboardPage = ({ repositories, token }: DashboardPageProps) => {
 												</span>
 											</div>
 										</Link>
-										<div className="flex items-center gap-2 text-sm text-muted-foreground">
+										<div className="pl-4 flex items-center gap-2 text-sm text-muted-foreground">
 											<span
 												className={`h-3 w-3 rounded-full ${repo.isActive ? "bg-green-500" : "bg-gray-400"}`}
 												aria-label={
@@ -252,7 +252,7 @@ const DashboardPage = ({ repositories, token }: DashboardPageProps) => {
 										<Button
 											onClick={handleConnectGithubApp}
 											variant="outline"
-											className="mt-4 w-full sm:w-auto hover:cursor-pointer bg-primary"
+											className="mt-4 w-full sm:w-auto hover:cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white"
 											aria-label="Connect a new repository"
 										>
 											<Plus className="mr-2 h-4 w-4" /> Connect a Repository

@@ -7,7 +7,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
 	return (
-		<section className="dark  min-h-screen w-max-screen w-full overflow-hidden relative">
+		<section className="dark min-h-screen w-max-screen w-full overflow-hidden relative">
 			<SidebarProvider>
 				<SidebarTrigger />
 				<DashboardSidebar />

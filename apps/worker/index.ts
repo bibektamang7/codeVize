@@ -1,5 +1,5 @@
 import { Redis } from "ioredis";
-import { Worker } from "bullmq";
+import { QueueEvents, Worker } from "bullmq";
 import { logger } from "logger";
 import type { Job } from "bullmq";
 import {
@@ -19,6 +19,7 @@ const repoWorker = new Worker(
 	async (job: Job) => {
 		switch (job.name) {
 			case "review": {
+				console.log("this is running")
 				const { owner, prNumber, installationId, repoId, repoName } = job.data;
 				await runGraphForPR({
 					prNumber,
@@ -47,8 +48,37 @@ const repoWorker = new Worker(
 	},
 	{
 		connection: redisConnection as any,
+		concurrency: 5,
+		limiter: {
+			max: 10,
+			duration: 1000,
+		},
+		lockDuration: 60000,
 	}
 );
 repoWorker.on("failed", (job, err) => {
 	logger.error(`Repo job failed`, { jobId: job?.id, error: err.message });
 });
+repoWorker.on("ready", () => {
+	logger.info("Worker is ready");
+});
+
+const events = new QueueEvents("github-job", {
+	connection: redisConnection as any,
+});
+events.on("completed", ({ jobId }) => {
+	logger.info(`Job ${jobId} completed`);
+});
+events.on("failed", ({ jobId, failedReason }) => {
+	logger.error(`Job ${jobId} failed: ${failedReason}`);
+});
+
+const shutdown = async () => {
+	logger.info("Shutting down worker...");
+	await repoWorker.close();
+	await redisConnection.quit();
+	process.exit(0);
+};
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);

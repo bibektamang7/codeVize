@@ -45,7 +45,7 @@ const Testimonials = () => {
     <section className="py-20 px-4 bg-gradient-to-b from-[#0a0a0a] to-black">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 text-white">
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 text-gray-300">
             Loved by developers worldwide
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">

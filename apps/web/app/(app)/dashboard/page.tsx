@@ -4,11 +4,7 @@ import axios from "axios";
 import { auth } from "@/app/api/auth/[...nextauth]/auth";
 import { redirect } from "next/navigation";
 
-const page = async ({
-	searchParams,
-}: {
-	searchParams: { plan: string; success: boolean };
-}) => {
+const page = async () => {
 	const session = await auth();
 	if (!session || !session.user?.token) {
 		redirect("/login");

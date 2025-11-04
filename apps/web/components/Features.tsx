@@ -98,7 +98,7 @@ const Features = () => {
 		<section className="py-24 px-4 bg-black">
 			<div className="max-w-6xl mx-auto">
 				<div className="text-center mb-16">
-					<h2 className="text-3xl md:text-6xl font-bold mb-4 text-white">
+					<h2 className="text-3xl md:text-6xl font-bold mb-4 text-gray-200">
 						Everything you need to optimize your GitHub workflow
 					</h2>
 					<p className=" text-muted-foreground max-w-2xl mx-auto">

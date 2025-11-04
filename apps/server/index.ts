@@ -21,7 +21,6 @@ app.use(
 	})
 );
 
-// Middleware to parse JSON
 app.use(express.json());
 
 import userRouter from "./v1/routes/user.route";

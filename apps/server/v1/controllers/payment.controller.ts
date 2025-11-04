@@ -51,9 +51,35 @@ export const createPayment = asyncHandler(
 		if (!plan) {
 			throw new ApiError(404, "Plan not found!.");
 		}
+		const hasValidPlan = await prisma.payment.findFirst({
+			where: {
+				planId: plan.id,
+				userId: req.user.id,
+				status: "COMPLETED",
+				validUntil: {
+					gt: new Date(),
+				},
+			},
+		});
+
+		if (hasValidPlan || plan.name === "FREE") {
+			await prisma.user.update({
+				where: {
+					id: req.user.id,
+				},
+				data: {
+					planName: plan.name,
+					planId: plan.id,
+				},
+			});
+			res.status(200).json({
+				redirect_url: `/dashboard/subscription/payment?success=true&plan=${plan.name}`,
+			});
+			return;
+		}
 
 		const formData = JSON.stringify({
-			return_url: "https://553511bbaa9b.ngrok-free.app/api/payment/callback",
+			return_url: "https://799920e12fcc.ngrok-free.app/api/payment/callback",
 			website_url: "http://localhost:3000",
 			amount: Number(plan.price) * 100,
 			purchase_order_id: plan.id,
@@ -186,7 +212,6 @@ export const paymentCallback = asyncHandler(
 					},
 				});
 				plan = updatePayment.plan.name;
-				console.log("is it here or not");
 			});
 			res.status(200).json({ message: "Payment successful", plan });
 			return;

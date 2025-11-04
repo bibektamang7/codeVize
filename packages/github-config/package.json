@@ -4,7 +4,13 @@
 	"type": "module",
 	"private": true,
 	"exports": {
-		".": "./index.ts"
+		".": {
+			"types": "./index.ts",
+			"default": "./index.ts"
+		},
+		"./repo": {
+			"default": "./src/repo/index.ts"
+		}
 	},
 	"devDependencies": {
 		"@types/bun": "latest"
@@ -16,8 +22,10 @@
 		"@octokit/rest": "^22.0.0",
 		"@octokit/types": "^14.1.0",
 		"@octokit/webhooks": "^14.1.2",
+		"octokit": "^5.0.3",
 		"db": "*",
 		"langflows": "*",
-		"octokit": "^5.0.3"
+		"logger": "*",
+		"bullmq-shared": "*"
 	}
 }

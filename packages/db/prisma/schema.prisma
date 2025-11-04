@@ -21,6 +21,8 @@ model User {
   image       String
   activeRepos Int          @default(0)
   planName    ExistingPlan @default(FREE)
+  planId      String
+  plan        Plan         @relation(fields: [planId], references: [id])
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   repos       Repo[]
@@ -30,7 +32,7 @@ model User {
 model Plan {
   id                       String       @id @default(cuid())
   name                     ExistingPlan @unique @default(FREE)
-  price                    Float?
+  price                    Float
   maxRepos                 Int
   aiReviewEnabled          Boolean      @default(false)
   aiIssueTriageEnabled     Boolean      @default(false)
@@ -44,18 +46,27 @@ model Plan {
   createdAt                DateTime     @default(now())
   updatedAt                DateTime     @updatedAt
   payments                 Payment[]
+  User                     User[]
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
 }
 
 model Payment {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status    String
-  amount    Int
-  planId    String
-  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String        @id @default(cuid())
+  pidx       String        @unique
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status     PaymentStatus
+  amount     Float
+  planId     String
+  plan       Plan          @relation(fields: [planId], references: [id], onDelete: Cascade)
+  validUntil DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 }
 
 model Repo {
@@ -99,12 +110,12 @@ model RepoConfig {
 }
 
 model IssueConfig {
-  id                   String      @id @default(cuid())
-  autoTriage           Boolean     @default(false)
-  aiSuggestion         Boolean     @default(false)
-  aiIssueTriageEnabled Boolean     @default(false)
-  issueEmbedEnabled    Boolean     @default(false)
-  RepoConfig           RepoConfig?
+  id                   String  @id @default(cuid())
+  aiIssueTriageEnabled Boolean @default(true)
+  issueEmbedEnabled    Boolean @default(false)
+
+  issueEnabled Boolean     @default(true)
+  RepoConfig   RepoConfig?
 }
 
 enum Tone {
@@ -126,7 +137,6 @@ model GeneralConfig {
   defaultModel   String?
 
   contextDepth Int?
-  issueEnabled Boolean @default(true)
 
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
@@ -142,34 +152,35 @@ model ReviewConfig {
   isProgressFortuneEnabled Boolean @default(false)
   poemEnabled              Boolean @default(false)
 
-  pathConfigs  PathConfig[]
-  labelConfigs LabelConfig[]
-  RepoConfig   RepoConfig?
+  // pathConfigs  PathConfig[]
+  // labelConfigs LabelConfig[]
+  RepoConfig RepoConfig?
 }
 
-model PathConfig {
-  id             String        @id @default(cuid())
-  importance     Int?
-  pathPattern    String
-  instructions   String?
-  enabled        Boolean       @default(true)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  ReviewConfig   ReviewConfig? @relation(fields: [reviewConfigId], references: [id])
-  reviewConfigId String?
-}
+// TODO: FOR FUTURE IMPROVEMENT
+// model PathConfig {
+//   id             String        @id @default(cuid())
+//   importance     Int?
+//   pathPattern    String
+//   instructions   String?
+//   enabled        Boolean       @default(true)
+//   createdAt      DateTime      @default(now())
+//   updatedAt      DateTime      @updatedAt
+//   ReviewConfig   ReviewConfig? @relation(fields: [reviewConfigId], references: [id])
+//   reviewConfigId String?
+// }
 
 // To match the label from Github and pass instruction to LLM model
-model LabelConfig {
-  id             String        @id @default(cuid())
-  label          String
-  instructions   String?
-  enabled        Boolean       @default(true)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  ReviewConfig   ReviewConfig? @relation(fields: [reviewConfigId], references: [id])
-  reviewConfigId String?
-}
+// model LabelConfig {
+//   id             String        @id @default(cuid())
+//   label          String
+//   instructions   String?
+//   enabled        Boolean       @default(true)
+//   createdAt      DateTime      @default(now())
+//   updatedAt      DateTime      @updatedAt
+//   ReviewConfig   ReviewConfig? @relation(fields: [reviewConfigId], references: [id])
+//   reviewConfigId String?
+// }
 
 model RepoErrorLog {
   id           String     @id @default(cuid())

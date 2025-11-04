@@ -19,7 +19,7 @@ export default function CodevizeLanding() {
 	return (
 		<div className="min-h-screen bg-black p-8 text-white flex items-center justify-center">
 			<div className="w-full max-w-[1300px] rounded-[28px] bg-[rgba(255,255,255,0.02)] backdrop-blur-md border border-[rgba(255,255,255,0.04)] overflow-hidden shadow-2xl">
-				<Navbar/>
+				<Navbar />
 				<section className="px-12 pb-10 relative">
 					<div
 						className="absolute -top-24 left-1/2 transform -translate-x-1/2 w-[420px] h-[300px] pointer-events-none"
@@ -39,7 +39,7 @@ export default function CodevizeLanding() {
 								</button>
 							</div>
 
-							<h1 className="max-w-[980px] font-semibold text-[56px] md:text-[64px] lg:text-[74px] leading-[1.1] tracking-tight">
+							<h1 className="max-w-[980px] font-semibold text-[56px] md:text-[64px] lg:text-[74px] leading-[1.1] tracking-tight text-gray-200">
 								Smarter Code Reviews,
 								<br />
 								Faster Issue Tagging

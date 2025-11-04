@@ -2,8 +2,8 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getReposWithErrorLogs } from "@/lib/actions";
-import Link from "next/link";
 import { AlertTriangle, GitBranch, Calendar, Clock } from "lucide-react";
+import { RepositoryProps } from "@/types/model.types";
 
 const ErrorLogsPage = async () => {
 	const repos = await getReposWithErrorLogs();
@@ -29,13 +29,11 @@ const ErrorLogsPage = async () => {
 				</Card>
 			) : (
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{repos.map((repo) => {
-						const lastError = repo.repoConfig?.errorLogs[0];
+					{repos.map((repo: RepositoryProps) => {
+						const lastError =
+							repo.repoConfig?.errorLogs && repo.repoConfig?.errorLogs[0];
 						return (
-							<Link
-								key={repo.id}
-								href={`/dashboard/error-logs/${repo.id}`}
-							>
+							<div key={repo.id}>
 								<Card className="hover:shadow-lg transition-shadow cursor-pointer">
 									<CardHeader className="pb-3">
 										<div className="flex justify-between items-start">
@@ -47,7 +45,7 @@ const ErrorLogsPage = async () => {
 												variant="destructive"
 												className="ml-2"
 											>
-												{repo.repoConfig?.errorLogs.length} errors
+												{repo.repoConfig?.errorLogs?.length || 0} errors
 											</Badge>
 										</div>
 									</CardHeader>
@@ -77,7 +75,7 @@ const ErrorLogsPage = async () => {
 										)}
 									</CardContent>
 								</Card>
-							</Link>
+							</div>
 						);
 					})}
 				</div>

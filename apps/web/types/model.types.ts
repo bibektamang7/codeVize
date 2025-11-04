@@ -24,7 +24,18 @@ export interface PullRequestProps {
 	commitHash: string;
 	state: string;
 	createdAt: Date;
-	reviews: ReviewProps[]
+	reviews: ReviewProps[];
+}
+
+enum Tone {
+	professional,
+	casual,
+	friendly,
+	humorous,
+	enthusiastic,
+	empathetic,
+	formal,
+	informal,
 }
 
 export interface RepositoryProps {
@@ -35,6 +46,32 @@ export interface RepositoryProps {
 	repoURL: string;
 	languages: string[];
 	isActive: boolean;
-	pullRequests: PullRequestProps[];
-	Issue: IssueProps[];
+	repoConfig?: {
+		id: string;
+		generalConfig: {
+			tone: Tone;
+			enableFreeTier: boolean;
+			defaultModel?: string;
+		};
+		issueConfig: {
+			id: string;
+			aiIssueTriageEnabled: boolean;
+			issueEmbedEnabled: boolean;
+		};
+		reviewConfig: {
+			aiReviewEnabled: boolean;
+			highLevelSummaryEnabled: boolean;
+			showWalkThrough: boolean;
+		};
+		errorLogs?: RepoErrorLogProps[];
+	};
+}
+
+export interface RepoErrorLogProps {
+	id: string;
+	message: string;
+	type: string;
+	number?: number;
+	occurredAt: Date;
+	resolved: boolean;
 }

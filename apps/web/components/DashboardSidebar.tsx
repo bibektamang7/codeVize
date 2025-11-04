@@ -1,4 +1,3 @@
-import { CodeXml } from "lucide-react";
 import Link from "next/link";
 import {
 	Sidebar,
@@ -17,6 +16,7 @@ import {
 	CreditCard,
 	MessageCircleWarning,
 } from "lucide-react";
+import ProfileDropdown from "./ProfileDropdown";
 
 const sidebarMenu = [
 	{
@@ -39,7 +39,7 @@ const sidebarMenu = [
 
 const DashboardSidebar = () => {
 	return (
-		<Sidebar>
+		<Sidebar className="dark">
 			<SidebarHeader>
 				<div className="flex items-center gap-3 p-3">
 					<Avatar className="size-8">
@@ -51,7 +51,6 @@ const DashboardSidebar = () => {
 					</Avatar>
 					<div className="flex flex-col">
 						<h2 className="text-lg font-semibold">CodeVize</h2>
-						{/* <p className="text-sm text-muted-foreground">Change Organization</p> */}
 					</div>
 				</div>
 			</SidebarHeader>
@@ -79,19 +78,7 @@ const DashboardSidebar = () => {
 				</SidebarGroup>
 			</SidebarContent>
 			<SidebarFooter>
-				<div className="flex items-center gap-3 p-3 border-t border-sidebar-border">
-					<Avatar className="size-8">
-						<AvatarImage
-							src="/placeholder-user.jpg"
-							alt="User"
-						/>
-						<AvatarFallback>U</AvatarFallback>
-					</Avatar>
-					<div className="flex flex-col">
-						<span className="text-sm font-medium">Bibek7here</span>
-						<span className="text-xs text-muted-foreground">Admin</span>
-					</div>
-				</div>
+				<ProfileDropdown />
 			</SidebarFooter>
 		</Sidebar>
 	);
