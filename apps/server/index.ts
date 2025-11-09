@@ -13,15 +13,17 @@ app.use(middleware);
 // const ALLOWED_HEADERS = process.env.ALLOWED_HEADERS;
 app.use(
 	cors({
-		// allowedHeaders: ALLOWED_HEADERS,
-		// allowedHeaders: ["http://localhost:3000"],
-		origin: "http://localhost:3000",
+		origin: process.env.CORS_ORIGIN || "http://localhost:3000",
 		credentials: true,
 		methods: ["POST", "GET", "PATCH", "PUT", "DELETE"],
 	})
 );
 
 app.use(express.json());
+
+app.get("/health", (req, res) => {
+	res.status(200).json({ status: "OK" });
+});
 
 import userRouter from "./v1/routes/user.route";
 import repositoryRouter from "./v1/routes/repository.route";
