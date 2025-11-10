@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import { prisma } from "db/prisma";
-import { getAuthenticatedOctokit } from "github-config";
 import { ApiError, asyncHandler } from "../utils/apiErrorHandler";
 
 export const getRepository = asyncHandler(

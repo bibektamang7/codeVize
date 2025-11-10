@@ -29,11 +29,13 @@ import userRouter from "./v1/routes/user.route";
 import repositoryRouter from "./v1/routes/repository.route";
 import planRouter from "./v1/routes/plan.route";
 import paymentRouter from "./v1/routes/payment.route";
+import adminRouter from "./v1/routes/admin.route";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/repositories", repositoryRouter);
 app.use("/api/v1/plans", planRouter);
 app.use("/api/v1/payments", paymentRouter);
+app.use("/api/v1/admin", adminRouter);
 
 app.use(errorHandler);
 

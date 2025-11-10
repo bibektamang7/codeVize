@@ -34,11 +34,11 @@ export const registerUser = asyncHandler(
 				githubId: String(githubId),
 			},
 		});
-		console.log("this is user to find")
 		if (user) {
 			throw new ApiError(400, "User already exists");
 		}
-		console.log("this is user to create")
+		const adminEmail = process.env.ADMIN_EMAIL;
+		const role = email === adminEmail ? "ADMIN" : "USER";
 		const createdUser = await prisma.user.create({
 			data: {
 				email,
@@ -51,6 +51,7 @@ export const registerUser = asyncHandler(
 						name: "FREE",
 					},
 				},
+				role: role,
 			},
 		});
 		if (!createdUser) {
