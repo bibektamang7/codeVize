@@ -46,6 +46,8 @@ export interface RepositoryProps {
 	repoURL: string;
 	languages: string[];
 	isActive: boolean;
+	user: User;
+	createdAt: Date;
 	repoConfig?: {
 		id: string;
 		generalConfig: {
@@ -74,4 +76,25 @@ export interface RepoErrorLogProps {
 	number?: number;
 	occurredAt: Date;
 	resolved: boolean;
+}
+
+export interface Stats {
+	totalTokensUsed: number;
+	activeRepositories: number;
+	totalUsers: number;
+	totalPayments: number;
+}
+interface User {
+	username: string;
+	createdAt: Date;
+}
+interface Payment {
+	amount: number;
+	createdAt: Date;
+}
+export interface Activity {
+	newUser: User | null;
+	newRepositoryAdded: RepositoryProps | null;
+	paymentReceived: Payment | null;
+	pendingPaymentsCount: number;
 }

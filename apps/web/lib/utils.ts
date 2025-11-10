@@ -44,7 +44,6 @@ export async function retryApiCall<T>(
 	throw lastError;
 }
 
-// Simple circuit breaker implementation
 export class CircuitBreaker {
 	private failureCount: number = 0;
 	private lastFailureTime: number = 0;
@@ -55,28 +54,23 @@ export class CircuitBreaker {
 	async call<T>(fn: () => Promise<T>): Promise<T> {
 		const now = Date.now();
 
-		// Check if circuit breaker has timed out
 		if (this.state === "OPEN" && now - this.lastFailureTime > this.timeout) {
 			this.state = "HALF_OPEN";
 		}
 
-		// If circuit is open, throw an error
 		if (this.state === "OPEN") {
 			throw new Error("Circuit breaker is OPEN");
 		}
 
 		try {
 			const result = await fn();
-			// Success - reset failure count
 			this.failureCount = 0;
 			this.state = "CLOSED";
 			return result;
 		} catch (error) {
-			// Failure - increment failure count
 			this.failureCount++;
 			this.lastFailureTime = now;
 
-			// If failure count exceeds threshold, open circuit
 			if (this.failureCount >= this.failureThreshold) {
 				this.state = "OPEN";
 			}
@@ -84,4 +78,39 @@ export class CircuitBreaker {
 			throw error;
 		}
 	}
+}
+
+export function formatRelativeTime(date: string | Date): string | null {
+  const past = new Date(date);
+  const now = new Date();
+
+  // Invalid date check
+  if (isNaN(past.getTime())) {
+    return null;
+  }
+
+  // Only handle past dates
+  if (past > now) {
+    return null; // or return "in the future" if desired
+  }
+
+  const diffMs = now.getTime() - past.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMinutes < 1) {
+    return 'Just now';
+  } else if (diffMinutes < 60) {
+    return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`;
+  } else if (diffHours < 24) {
+    return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+  } else if (diffDays < 30) {
+    return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+  }
+  // Optional: extend to weeks/months/years if needed
+
+  // Fallback to absolute date if beyond "days"
+  return past.toLocaleDateString();
 }

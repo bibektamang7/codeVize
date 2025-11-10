@@ -91,7 +91,7 @@ const Pricing = () => {
 	};
 
 	return (
-		<section className="py-20 px-4 bg-gradient-to-b from-black to-[#0a0a0a]">
+		<section className="py-20 px-4 bg-linear-to-b from-black to-[#0a0a0a]">
 			<div className="max-w-6xl mx-auto">
 				<div className="text-center mb-16">
 					<h2 className="text-3xl md:text-5xl font-bold mb-4 text-slate-200">
@@ -113,8 +113,8 @@ const Pricing = () => {
 								key={planId}
 								className={`relative rounded-2xl border ${
 									isPopular
-										? "border-indigo-500/50 bg-gradient-to-b from-indigo-900/10 to-black/80 shadow-lg shadow-indigo-500/20"
-										: "border-[#ffffff1a] bg-gradient-to-b from-[#ffffff05] to-black/50"
+										? "border-indigo-500/50 bg-linear-to-b from-indigo-900/10 to-black/80 shadow-lg shadow-indigo-500/20"
+										: "border-[#ffffff1a] bg-linear-to-b from-[#ffffff05] to-black/50"
 								} p-6 flex flex-col`}
 							>
 								{isPopular && (
@@ -126,7 +126,9 @@ const Pricing = () => {
 								)}
 
 								<div className="mt-6">
-									<h3 className="text-xl font-bold text-slate-200">{plan.name}</h3>
+									<h3 className="text-xl font-bold text-slate-200">
+										{plan.name}
+									</h3>
 									<div className="mt-4">
 										<span className="text-3xl font-bold text-slate-200">
 											RS. {plan.price}
@@ -154,7 +156,7 @@ const Pricing = () => {
 												className="flex items-start gap-2"
 											>
 												<CheckCircle
-													className="text-green-500 mt-0.5 flex-shrink-0"
+													className="text-green-500 mt-0.5 shrink-0"
 													size={18}
 												/>
 												<span className="text-muted-foreground text-sm">

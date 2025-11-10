@@ -50,12 +50,10 @@ const nextAuth = NextAuth({
 
 			const githubProfile = profile as GithubProfile;
 			if (!githubProfile?.email || !githubProfile.login || !githubProfile.id) {
-				console.warn("GitHub profile missing required fields:", githubProfile);
 				return false;
 			}
 
 			try {
-				console.log("this is backend url", backendURL);
 				const loginResponse = await retryApiCall(() =>
 					circuitBreaker.call(() =>
 						apiClient.post(`${backendURL}/users/login`, {
@@ -64,23 +62,16 @@ const nextAuth = NextAuth({
 						})
 					)
 				);
-				console.log("Login in successfull for user", loginResponse.data.user);
 				user.id = loginResponse.data.user.id;
 				user.token = loginResponse.data.token;
 				user.plan = loginResponse.data.user.planName;
 			} catch (error: any) {
 				console.error(`Login failed for user: ${githubProfile.email}`, error);
-
 				if (
 					error.response &&
 					(error.response.status === 404 || error.response.status === 400)
 				) {
 					try {
-						console.log(
-							`Attempting to register user: ${githubProfile.email}`,
-							backendURL
-						);
-
 						const signUpResponse = await retryApiCall(() =>
 							circuitBreaker.call(() =>
 								apiClient.post(`${backendURL}/users/register`, {
@@ -92,17 +83,10 @@ const nextAuth = NextAuth({
 							)
 						);
 
-						console.log(
-							`Registration successful for user: ${signUpResponse.data.user}`
-						);
 						user.id = signUpResponse.data.user.id;
 						user.token = signUpResponse.data.token;
 						user.plan = signUpResponse.data.user.planName;
 					} catch (registerError: any) {
-						console.error(
-							`Registration failed for user: ${githubProfile.email}`,
-							registerError.message || registerError
-						);
 						return false;
 					}
 				} else {

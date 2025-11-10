@@ -11,7 +11,6 @@ export default async function middleware(req: NextRequest) {
 	if (isPublicPath && session) {
 		return NextResponse.redirect(new URL("/dashboard", req.url));
 	}
-
 	if (!isPublicPath && !isRootPath && !session) {
 		return NextResponse.redirect(new URL("/login", req.url));
 	}
@@ -26,5 +25,5 @@ export default async function middleware(req: NextRequest) {
 }
 
 export const config = {
-	matcher: ["/", "/login", "/signup", "/dashboard/:path*"],
+	matcher: ["/", "/login", "/signup", "/dashboard/:path*", "/admin/:path*"],
 };
