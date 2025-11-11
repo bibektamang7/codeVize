@@ -6,6 +6,7 @@ import adminApiService from "@/lib/adminApiService";
 import { useSession } from "next-auth/react";
 import { RepositoryProps as Repository } from "@/types/model.types";
 import { Pagination } from "../payments/page";
+import LoaderComponent from "@/components/Loader";
 
 const RepositoriesPage = () => {
 	const session = useSession();
@@ -80,11 +81,7 @@ const RepositoriesPage = () => {
 	};
 
 	if (loading) {
-		return (
-			<div className="flex items-center justify-center h-full">
-				<Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-			</div>
-		);
+		return <LoaderComponent />;
 	}
 
 	if (error) {
@@ -126,7 +123,7 @@ const RepositoriesPage = () => {
 						value={searchTerm}
 						onChange={(e) => {
 							setSearchTerm(e.target.value);
-							setCurrentPage(1); 
+							setCurrentPage(1);
 						}}
 					/>
 				</div>

@@ -1,5 +1,6 @@
-"use client"; 
+"use client";
 
+import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 
 export default function Error({
@@ -10,21 +11,18 @@ export default function Error({
 	reset: () => void;
 }) {
 	useEffect(() => {
-		// Log the error to an error reporting service
 		console.error(error);
 	}, [error]);
 
 	return (
-		<div>
-			<h2>Something went wrong!</h2>
-			<button
-				onClick={
-					// Attempt to recover by trying to re-render the segment
-					() => reset()
-				}
+		<div className="w-full flex items-center justify-center flex-col gap-4">
+			<h2 className="text-xl text-red-500">Something went wrong!</h2>
+			<Button
+				onClick={() => reset()}
+				className="hover:cursor-pointer"
 			>
 				Try again
-			</button>
+			</Button>
 		</div>
 	);
 }

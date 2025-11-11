@@ -6,6 +6,7 @@ import adminApiService from "@/lib/adminApiService";
 import { useSession } from "next-auth/react";
 import { Activity, Stats } from "@/types/model.types";
 import { formatRelativeTime } from "@/lib/utils";
+import LoaderComponent from "@/components/Loader";
 
 const DashboardPage = () => {
 	const session = useSession();
@@ -66,11 +67,7 @@ const DashboardPage = () => {
 		: [];
 
 	if (loading) {
-		return (
-			<div className="flex items-center justify-center h-full">
-				<Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-			</div>
-		);
+		return <LoaderComponent />;
 	}
 
 	if (error) {

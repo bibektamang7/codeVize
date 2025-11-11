@@ -4,6 +4,7 @@ import { Search, Trash2, Loader2 } from "lucide-react";
 import adminApiService from "@/lib/adminApiService";
 import { useSession } from "next-auth/react";
 import { Pagination } from "../payments/page";
+import LoaderComponent from "@/components/Loader";
 
 interface User {
 	id: string;
@@ -67,11 +68,7 @@ const UsersPage = () => {
 	};
 
 	if (loading) {
-		return (
-			<div className="flex items-center justify-center h-full">
-				<Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-			</div>
-		);
+		return <LoaderComponent />;
 	}
 
 	if (error) {

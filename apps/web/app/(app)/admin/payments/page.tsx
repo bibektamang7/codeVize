@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, Eye, Loader2 } from "lucide-react";
 import adminApiService from "@/lib/adminApiService";
 import { useSession } from "next-auth/react";
+import LoaderComponent from "@/components/Loader";
 
 interface Payment {
 	id: string;
@@ -73,11 +74,7 @@ const PaymentsPage = () => {
 	};
 
 	if (loading) {
-		return (
-			<div className="flex items-center justify-center h-full">
-				<Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-			</div>
-		);
+		return <LoaderComponent />;
 	}
 
 	if (error) {
@@ -119,7 +116,7 @@ const PaymentsPage = () => {
 						value={searchTerm}
 						onChange={(e) => {
 							setSearchTerm(e.target.value);
-							setCurrentPage(1); 
+							setCurrentPage(1);
 						}}
 					/>
 				</div>

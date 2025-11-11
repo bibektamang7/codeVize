@@ -1,6 +1,7 @@
 import AdminSidebar from "@/components/AdminSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { SessionProvider } from "next-auth/react";
+import AuthLayout from "@/components/AuthLayout";
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 	return (
@@ -9,7 +10,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 				<AdminSidebar />
 			</SidebarProvider>
 			<SessionProvider>
-				<main className="flex-1 p-6 bg-gray-50">{children}</main>
+				<AuthLayout>
+					<main className="flex-1 p-6 bg-gray-50">{children}</main>
+				</AuthLayout>
 			</SessionProvider>
 		</div>
 	);
