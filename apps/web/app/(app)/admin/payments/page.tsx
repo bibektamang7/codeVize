@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Eye, Loader2 } from "lucide-react";
+import { Search, Eye } from "lucide-react";
 import adminApiService from "@/lib/adminApiService";
 import { useSession } from "next-auth/react";
 import LoaderComponent from "@/components/Loader";
@@ -50,8 +50,8 @@ const PaymentsPage = () => {
 					limit: 10,
 				}
 			);
-			setPayments(response.data.payments);
-			setPagination(response.data.pagination);
+			setPayments(response.payments);
+			setPagination(response.pagination);
 		} catch (err: any) {
 			console.error("Error fetching payments:", err);
 			setError(err.response?.data?.message || "Failed to fetch payments");

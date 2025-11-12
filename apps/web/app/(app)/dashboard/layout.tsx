@@ -10,8 +10,10 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({
 		<section className="dark min-h-screen w-max-screen w-full overflow-hidden relative">
 			<SidebarProvider>
 				<SidebarTrigger />
-				<DashboardSidebar />
-				<SessionProvider>{children}</SessionProvider>
+				<SessionProvider>
+					<DashboardSidebar />
+					{children}
+				</SessionProvider>
 			</SidebarProvider>
 		</section>
 	);

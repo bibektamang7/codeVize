@@ -22,7 +22,6 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
 		return <>{children}</>;
 	}
 
-	// optional fallback to prevent flicker
 	return null;
 };
 

@@ -33,8 +33,8 @@ const RepositoriesPage = () => {
 					limit: 10,
 				}
 			);
-			setRepositories(response.data.repositories);
-			setPagination(response.data.pagination);
+			setRepositories(response.repositories);
+			setPagination(response.pagination);
 		} catch (err: any) {
 			console.error("Error fetching repositories:", err);
 			setError(err.response?.data?.message || "Failed to fetch repositories");

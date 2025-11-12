@@ -1,13 +1,4 @@
-import {
-	CheckCircle,
-	GitBranch,
-	Users,
-	Zap,
-	Code2,
-	Shield,
-	Clock,
-	Workflow,
-} from "lucide-react";
+import { CheckCircle, GitBranch, Users, Zap } from "lucide-react";
 import { BentoGrid, BentoCard } from "@/components/magicui/bento-grid";
 import Image from "next/image";
 
@@ -19,15 +10,16 @@ const Features = () => {
 			description:
 				"AI-powered analysis that understands your codebase context and provides meaningful suggestions for improvement.",
 			header: (
-				<div className="flex h-full w-full bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg" />
+				<div className="flex h-full w-full bg-linear-to-br from-primary/20 to-accent/20 rounded-lg" />
 			),
 			icon: CheckCircle,
 			name: "Intelligent Code Reviews",
 			background: (
-				<img
+				<Image
 					src={"/review.png"}
-					width={"100%"}
-					height={"100%"}
+					width={10}
+					height={10}
+					className="w-full h-full"
 					alt="review image"
 				/>
 			),
@@ -39,16 +31,18 @@ const Features = () => {
 			description:
 				"Automatically categorize and label issues based on content analysis and historical patterns.",
 			header: (
-				<div className="flex h-full w-full bg-gradient-to-br from-accent/20 to-primary/20 rounded-lg" />
+				<div className="flex h-full w-full bg-linear-to-br from-accent/20 to-primary/20 rounded-lg" />
 			),
 			icon: GitBranch,
 
 			background: (
-				<img
+				<Image
 					src={"/review.png"}
-					width={"100%"}
-					height={"100%"}
+					width={10}
+					height={10}
+					className="w-full h-full"
 					alt="review image"
+					loading="lazy"
 				/>
 			),
 		},
@@ -59,15 +53,16 @@ const Features = () => {
 			description:
 				"Enhanced coordination with smart notifications and review assignment algorithms.",
 			header: (
-				<div className="flex h-full w-full bg-gradient-to-br from-secondary/40 to-muted/40 rounded-lg" />
+				<div className="flex h-full w-full bg-linear-to-br from-secondary/40 to-muted/40 rounded-lg" />
 			),
 			icon: Users,
 
 			background: (
-				<img
+				<Image
 					src={"/review.png"}
-					width={"100%"}
-					height={"100%"}
+					width={10}
+					height={10}
+					className="w-full h-full"
 					alt="review image"
 				/>
 			),
@@ -79,15 +74,15 @@ const Features = () => {
 			description:
 				"Instant analysis and tagging that seamlessly integrates with your development velocity and workflow.",
 			header: (
-				<div className="flex h-full w-full bg-gradient-to-br from-muted/40 to-secondary/40 rounded-lg" />
+				<div className="flex h-full w-full bg-linear-to-br from-muted/40 to-secondary/40 rounded-lg" />
 			),
 			icon: Zap,
 			background: (
-				<img
+				<Image
 					src={"/review.png"}
-					// width={"100%"}
-					// height={"80%"}
-					className="inset-0 object-cover"
+					height={10}
+					width={10}
+					className="inset-0 object-cover w-full h-full"
 					alt="review image"
 				/>
 			),

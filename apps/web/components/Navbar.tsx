@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import React from "react";
-import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 

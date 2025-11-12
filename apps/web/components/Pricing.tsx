@@ -104,7 +104,7 @@ const Pricing = () => {
 				</div>
 
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-					{plans.map((plan, index) => {
+					{plans.map((plan) => {
 						const planId = plan.name.toLowerCase();
 						const isPopular = plan.name === "PRO";
 

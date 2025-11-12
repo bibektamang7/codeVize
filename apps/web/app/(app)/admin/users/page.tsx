@@ -5,6 +5,7 @@ import adminApiService from "@/lib/adminApiService";
 import { useSession } from "next-auth/react";
 import { Pagination } from "../payments/page";
 import LoaderComponent from "@/components/Loader";
+import Image from "next/image";
 
 interface User {
 	id: string;
@@ -42,8 +43,8 @@ const UsersPage = () => {
 					limit: 10,
 				}
 			);
-			setUsers(response.data.users);
-			setPagination(response.data.pagination);
+			setUsers(response.users);
+			setPagination(response.pagination);
 		} catch (err: any) {
 			console.error("Error fetching users:", err);
 			setError(err.response?.data?.message || "Failed to fetch users");
@@ -161,10 +162,13 @@ const UsersPage = () => {
 									<td className="px-6 py-4 whitespace-nowrap">
 										<div className="flex items-center">
 											<div className="shrink-0 h-10 w-10">
-												<img
+												<Image
 													className="h-10 w-10 rounded-full"
 													src={user.image}
 													alt=""
+													width={10}
+													height={10}
+													loading="lazy"
 												/>
 											</div>
 											<div className="ml-4">

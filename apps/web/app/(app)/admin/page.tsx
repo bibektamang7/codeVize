@@ -22,8 +22,9 @@ const DashboardPage = () => {
 				const response = await adminApiService.getDashboardStats(
 					session.data?.user?.token!
 				);
-				setActivity(response.data.activity);
-				setStats(response.data.stats);
+				console.log(response, "this i in dadmin")
+				setActivity(response.activity);
+				setStats(response.stats);
 			} catch (err: any) {
 				console.error("Error fetching dashboard stats:", err);
 				setError(

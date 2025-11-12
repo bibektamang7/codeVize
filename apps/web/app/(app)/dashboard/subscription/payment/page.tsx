@@ -22,7 +22,7 @@ const SubscriptionPayment = () => {
 		}
 
 		router.push("/dashboard");
-	}, []);
+	}, [plan, router, data, success, update]);
 
 	return null;
 };

@@ -20,10 +20,10 @@ const ProfileDropdown = () => {
 			<DropdownMenuTrigger asChild>
 				<div className="flex items-center gap-3 p-3 border-t border-sidebar-border cursor-pointer hover:bg-sidebar-accent rounded-md transition-colors duration-200">
 					<Avatar className="size-8">
-						<AvatarImage
+						{/* <AvatarImage
 							src="/placeholder-user.jpg"
 							alt="User"
-						/>
+						/> */}
 						<AvatarFallback>U</AvatarFallback>
 					</Avatar>
 					<div className="flex flex-col flex-1">

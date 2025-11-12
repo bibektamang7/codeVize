@@ -17,7 +17,7 @@ export async function retryApiCall<T>(
 		} catch (error: any) {
 			lastError = error;
 
-			// Don't retry on client errors (4xx), only server errors (5xx) or network issues
+			console.log(error.response.status, "this is login ");
 			if (
 				error.response &&
 				error.response.status >= 400 &&
@@ -26,12 +26,10 @@ export async function retryApiCall<T>(
 				throw error;
 			}
 
-			// If we've exhausted retries, throw the last error
 			if (i === maxRetries) {
 				throw error;
 			}
 
-			// Exponential backoff with jitter
 			const delay =
 				Math.min(baseDelay * Math.pow(2, i), 10000) + Math.random() * 1000;
 			console.warn(
@@ -81,36 +79,32 @@ export class CircuitBreaker {
 }
 
 export function formatRelativeTime(date: string | Date): string | null {
-  const past = new Date(date);
-  const now = new Date();
+	const past = new Date(date);
+	const now = new Date();
 
-  // Invalid date check
-  if (isNaN(past.getTime())) {
-    return null;
-  }
+	if (isNaN(past.getTime())) {
+		return null;
+	}
 
-  // Only handle past dates
-  if (past > now) {
-    return null; // or return "in the future" if desired
-  }
+	
+	if (past > now) {
+		return null; 
+	}
 
-  const diffMs = now.getTime() - past.getTime();
-  const diffSeconds = Math.floor(diffMs / 1000);
-  const diffMinutes = Math.floor(diffSeconds / 60);
-  const diffHours = Math.floor(diffMinutes / 60);
-  const diffDays = Math.floor(diffHours / 24);
+	const diffMs = now.getTime() - past.getTime();
+	const diffSeconds = Math.floor(diffMs / 1000);
+	const diffMinutes = Math.floor(diffSeconds / 60);
+	const diffHours = Math.floor(diffMinutes / 60);
+	const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMinutes < 1) {
-    return 'Just now';
-  } else if (diffMinutes < 60) {
-    return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`;
-  } else if (diffHours < 24) {
-    return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
-  } else if (diffDays < 30) {
-    return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
-  }
-  // Optional: extend to weeks/months/years if needed
-
-  // Fallback to absolute date if beyond "days"
-  return past.toLocaleDateString();
+	if (diffMinutes < 1) {
+		return "Just now";
+	} else if (diffMinutes < 60) {
+		return `${diffMinutes} minute${diffMinutes === 1 ? "" : "s"} ago`;
+	} else if (diffHours < 24) {
+		return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+	} else if (diffDays < 30) {
+		return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+	}
+	return past.toLocaleDateString();
 }

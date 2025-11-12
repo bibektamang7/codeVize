@@ -44,7 +44,7 @@ const DashboardSidebar = () => {
 				<div className="flex items-center gap-3 p-3">
 					<Avatar className="size-8">
 						<AvatarImage
-							src="/code.png"
+							src="/code.webp"
 							alt="User"
 						/>
 						<AvatarFallback>U</AvatarFallback>
