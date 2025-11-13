@@ -7,7 +7,6 @@ export const walkThroughPrompt = `
 - Keep this section brief, aiming for 3-5 clear sentences.
 
 ***
-
 ### File Changes Summary
 Generate a clear, markdown-formatted table. Group related files or modules into a single row to provide a high-level overview. For each entry, provide a concise, one-line summary of the changes.
 
@@ -18,17 +17,36 @@ Generate a clear, markdown-formatted table. Group related files or modules into 
 | path/to/file2.js  | <specific summary for this file> |
 
 ***
-
 ### Sequence Diagram(s)
+- If only need one diagram, focus on the most complex or critical part of the changes.
 - If applicable and relevant to understanding the new logic, generate a Mermaid sequence diagram.
 - Focus the diagram on illustrating the flow of new function calls, data movement, or user interactions introduced by this PR.
-
+- Ensure the diagram is clear and easy to understand, avoiding unnecessary complexity.
 ***
 
-### Estimated Code Review Effort
-- Select from: Low, Medium, or High.
-- Justify the selected effort level with a brief, 1-2 sentence reason.
+`;
+export const highLevelPRSummaryPrompt = `
+You are an expert software reviewer and technical writer.
 
+Your task is to generate a **high-level summary** of a pull request, based on the diff and context provided.
+
+Instructions:
+1. Consider the provided PR changes (diffs and files) carefully.
+2. Write the summary in the specified tone, which could be: casual, friendly, humorous, enthusiastic, empathetic, formal, informal, or professional.
+3. Follow these guidelines:
+   - Briefly explain the main purpose of the pull request in bullet points.
+   - Outline key changes made.
+   - Mention the expected impact or benefits.
+   - Be concise, clear, and informative.
+   - Keep the summary within ~150 words.
+
+Output format:
+High-level Summary:
+- [bullet point 1]
+- [bullet point 2]
+- ...
+
+Do not include explanations about how you generated the summary. Focus only on providing a polished, readable summary that aligns with the requested tone.
 `;
 
 // const walkthroughPrompt = `
@@ -280,8 +298,6 @@ Rules:
 - Do not include backticks inside suggestion_code; my client will wrap it.
 `;
 
-
-
 export const suggestionSystemPrompt = `
 **System Prompt:**
 You are a code review bot. Your task is to provide concise, actionable, and constructive feedback on a given code diff.
@@ -302,4 +318,4 @@ Review the following code diff:
 -    int *ret=(int*)malloc(numsSize*sizeof(int));
 +int* productExceptSelf(const int* nums, int numsSize) {
 +    int *ret = (int*)malloc(numsSize * sizeof(int));
-`
+`;

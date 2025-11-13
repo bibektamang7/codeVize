@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 enum ExistingPlan {
   FREE
   PRO
@@ -27,6 +32,12 @@ model User {
   updatedAt   DateTime     @updatedAt
   repos       Repo[]
   payments    Payment[]
+  role        Role         @default(USER)
+  tokenCount  Int          @default(0)
+
+  @@index([githubId])
+  @@index([email])
+  @@index([planId])
 }
 
 model Plan {
@@ -67,6 +78,10 @@ model Payment {
   validUntil DateTime?
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
 }
 
 model Repo {
@@ -86,6 +101,11 @@ model Repo {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  tokenCount Int @default(0)
+
+  @@index([userId])
+  @@index([repoId])
 }
 
 model RepoConfig {
@@ -107,6 +127,11 @@ model RepoConfig {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([repoId])
+  @@index([generalConfigId])
+  @@index([reviewConfigId])
+  @@index([issueConfigId])
 }
 
 model IssueConfig {
@@ -157,6 +182,17 @@ model ReviewConfig {
   RepoConfig RepoConfig?
 }
 
+model RepoErrorLog {
+  id           String     @id @default(cuid())
+  repoConfigId String
+  repoConfig   RepoConfig @relation(fields: [repoConfigId], references: [id], onDelete: Cascade)
+  message      String
+  type         String // e.g. "suggestion", "review", "embedding", "labelTag"
+  number       Int?
+  occurredAt   DateTime   @default(now())
+  resolved     Boolean    @default(false)
+}
+
 // TODO: FOR FUTURE IMPROVEMENT
 // model PathConfig {
 //   id             String        @id @default(cuid())
@@ -181,14 +217,3 @@ model ReviewConfig {
 //   ReviewConfig   ReviewConfig? @relation(fields: [reviewConfigId], references: [id])
 //   reviewConfigId String?
 // }
-
-model RepoErrorLog {
-  id           String     @id @default(cuid())
-  repoConfigId String
-  repoConfig   RepoConfig @relation(fields: [repoConfigId], references: [id], onDelete: Cascade)
-  message      String
-  type         String // e.g. "suggestion", "review", "embedding", "labelTag"
-  number       Int?
-  occurredAt   DateTime   @default(now())
-  resolved     Boolean    @default(false)
-}

@@ -1,20 +1,18 @@
 import { getAuthenticatedOctokit } from "github-config";
-import { extractDiffHunks, retrieveWithParents } from "./retriever";
+import { extractDiffHunks } from "./retriever";
 import type { PullRequestGraphState } from "../../graphs/pullRequestGraph";
 import { getCodeSuggestionModel } from "../codeSuggestionLLMFactory";
 import { suggestionSystemPrompt } from "../../prompts/reviewPrompt";
 import { Send } from "@langchain/langgraph";
 import { tryInvoke } from "../utils";
-import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 
 const MAX_QUERY_LEN = 4000;
 const BATCH_SIZE = 10;
-const SIMILARITY_THRESHOLD = 0.75;
 
 export const checkBugsOrImprovement = async (
 	State: typeof PullRequestGraphState.State
 ) => {
-	console.log("after that")
+	console.log("after that");
 	const comments: any[] = [];
 	const filterSelectedFiles = State.unReviewedFiles;
 	if (!filterSelectedFiles?.length) {
@@ -35,42 +33,29 @@ export const checkBugsOrImprovement = async (
 				.trim()
 				.slice(0, MAX_QUERY_LEN);
 			if (!query) continue;
+			const configContext = `
+Repo Config Files:
 
-			let relatedDocs: any[] = [];
-			try {
-				relatedDocs = await retrieveWithParents({
-					query,
-					kPerQuery: 6,
-					maxParents: 5,
-					repo: State.repoName,
-					owner: State.owner,
-					installationId: State.installationId,
-					similarityThreshold: SIMILARITY_THRESHOLD,
-				});
-			} catch (err) {
-				console.warn(
-					"Failed to retrieve embeddings context, continuing without context:",
-					err
-				);
-			}
+.eslintrc.json:
+${State.repoConfigFiles[".eslintrc.json"] || "Not present"}
 
-			const contextBlock =
-				relatedDocs.length > 0
-					? `Context from similar parts of the repo (use if relevant):\n${relatedDocs
-							.map(
-								(d, i) => `#${i + 1} (${d.metadata.source})\n${d.pageContent}`
-							)
-							.join("\n\n---\n\n")}`
-					: "No relevant context retrieved.";
+.prettierrc:
+${State.repoConfigFiles[".prettierrc"] || "Not present"}
+
+tsconfig.json:
+${State.repoConfigFiles["tsconfig.json"] || "Not present"}
+
+package.json:
+${State.repoConfigFiles["package.json"] || "Not present"}
+`;
 
 			const prompt = `
-
+-- This is config context of the repo. Please follow the repo config explicitly --
+${configContext}
 File: ${hunk.filePath}
 
 Changed code:
 ${hunk.code}
-
-${contextBlock}
 
 Format your comment exactly as follows:
 [Emoji] [Category]
@@ -154,7 +139,7 @@ Format your comment exactly as follows:
 		console.warn(`${failedHunks.length} hunks failed to review.`);
 	}
 
-	return {};
+	return { ...State };
 };
 
 export const publishSuggestion = async ({

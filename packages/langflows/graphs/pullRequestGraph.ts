@@ -7,6 +7,9 @@ import { tabularPRDiffSummary } from "../utils/pullRequest/summary";
 import { checkBugsOrImprovement } from "../utils/pullRequest/suggestion";
 import { getCodeSummarizationModel } from "../utils/codeSummarizationLLMFactory";
 import { getAuthenticatedOctokit } from "github-config";
+import { highLevelPRSummaryPrompt } from "../prompts/reviewPrompt";
+
+type RepoConfigFiles = Record<string, string>;
 
 export const PullRequestGraphState = Annotation.Root({
 	installationId: Annotation<number>,
@@ -24,6 +27,7 @@ export const PullRequestGraphState = Annotation.Root({
 	embeddingsAvailable: Annotation<boolean>,
 	repo: Annotation<Repo>,
 	error: Annotation<RepoError>,
+	repoConfigFiles: Annotation<RepoConfigFiles>,
 });
 
 const validationNode = async (state: typeof PullRequestGraphState.State) => {
@@ -138,20 +142,20 @@ const highLevelSummaryNode = async (
 The tone of the output should be:
 ${toneInstruction}
 
-The summary should:
-- Briefly explain the main purpose of the pull request in bullet points
-- Outline key changes made
-- Mention the expected impact or benefits
-- Be concise but informative
-- Match the specified tone
-
-The summary must be within 150 words range.
+## Diff
+\`\`\`diff
+${combinedDiff}
+\`\`\`
 
 High-level Summary:`;
 
 	try {
 		const summarizationModel = getCodeSummarizationModel();
 		const summaryResponse = await summarizationModel.invoke([
+			{
+				role: "system",
+				content: highLevelPRSummaryPrompt,
+			},
 			{
 				role: "user",
 				content: summaryPrompt,

@@ -188,6 +188,7 @@ githubApp.webhooks.on(
 );
 
 githubApp.webhooks.on("installation.created", async ({ octokit, payload }) => {
+	console.log("this is in installation");
 	await createRepos(octokit, payload);
 });
 
@@ -230,9 +231,10 @@ githubApp.webhooks.on("installation.deleted", async ({ octokit, payload }) => {
 	}
 });
 
-githubApp.webhooks.on("pull_request.synchronize", ({ octokit, payload }) => {
-	console.log("Pull request changes");
-});
+//TODO: ENABLE_LATER
+// githubApp.webhooks.on("pull_request.synchronize", ({ octokit, payload }) => {
+// 	console.log("Pull request changes");
+// });
 
 githubApp.webhooks.on("pull_request.opened", async ({ payload }) => {
 	try {
@@ -304,7 +306,7 @@ githubApp.webhooks.on("issues.opened", async ({ id, name, payload }) => {
 		if (!existedRepo.isActive) {
 			return;
 		}
-
+		console.log("this is issue open in worker");
 		await issueTriageSuggestion({
 			body,
 			installationId,

@@ -21,7 +21,6 @@ export const tabularPRDiffSummary = async (
 		}
 	}
 
-	// Build the prompt based on review configuration
 	let dynamicPrompt = walkThroughPrompt;
 
 	if (State.repo.repoConfig?.reviewConfig) {

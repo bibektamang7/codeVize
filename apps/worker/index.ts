@@ -5,7 +5,6 @@ import type { Job } from "bullmq";
 import {
 	runGraphForPR,
 	deleteEmbedRepo,
-	embedRepoChain,
 	runGraphForIssue,
 } from "langflows";
 
@@ -31,15 +30,16 @@ const repoWorker = new Worker(
 				break;
 			}
 			case "issue-triage": {
+				console.log("came in issue triage")
 				await runGraphForIssue({ ...job.data });
 				break;
 			}
 
-			case "embed-repo": {
-				const { installationId, owner, repo } = job.data;
-				await embedRepoChain(installationId, owner, repo);
-				break;
-			}
+			// case "embed-repo": {
+			// 	const { installationId, owner, repo } = job.data;
+			// 	await embedRepoChain(installationId, owner, repo);
+			// 	break;
+			// }
 
 			case "delete-embedding":
 				await deleteEmbedRepo(job.data);

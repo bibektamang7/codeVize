@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { errorHandler } from "./v1/utils/apiErrorHandler";
 import { githubApp, createNodeMiddleware } from "github-config";
+import compression from "compression";
 
 const app = express();
 const middleware = createNodeMiddleware(githubApp.webhooks, {
@@ -19,6 +20,7 @@ app.use(
 	})
 );
 
+app.use(compression());
 app.use(express.json());
 
 app.get("/health", (req, res) => {

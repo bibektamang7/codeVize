@@ -1,4 +1,4 @@
-import { Queue, QueueEvents } from "bullmq";
+import { Queue } from "bullmq";
 import type { JobsOptions } from "bullmq";
 import { Redis } from "ioredis";
 
@@ -68,20 +68,20 @@ export const enqueueReview = (
 	return githubQueue.add("review", data, opts);
 };
 
-interface EmbedRepoData {
-	installationId: number;
-	owner: string;
-	repo: string;
-}
-export const embedRepo = (
-	data: EmbedRepoData,
-	opts: JobsOptions = {
-		attempts: 3,
-		backoff: { type: "exponential", delay: 3000 },
-	}
-) => {
-	return githubQueue.add("embed-repo", data, opts);
-};
+// interface EmbedRepoData {
+// 	installationId: number;
+// 	owner: string;
+// 	repo: string;
+// }
+// export const embedRepo = (
+// 	data: EmbedRepoData,
+// 	opts: JobsOptions = {
+// 		attempts: 3,
+// 		backoff: { type: "exponential", delay: 3000 },
+// 	}
+// ) => {
+// 	return githubQueue.add("embed-repo", data, opts);
+// };
 
 interface IssueTriageData {
 	installationId: number;

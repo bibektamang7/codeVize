@@ -1,122 +1,11 @@
-import { Chroma } from "@langchain/community/vectorstores/chroma";
-import { OllamaEmbeddings } from "@langchain/ollama";
-import { Document } from "langchain/document";
-
 import type { PullRequestGraphState } from "../../graphs/pullRequestGraph";
 import { getAuthenticatedOctokit } from "github-config";
-import {
-	embeddingModelName,
-	embeddingModelUrl,
-	vectorDBHost,
-	vectorDBPort,
-	vectorDBSSL,
-} from "../config";
 import {
 	REVIEWED_COMMITS_BLOCK_END,
 	REVIEWED_COMMITS_BLOCK_START,
 	SUMMARIZE_TAG,
 } from "..";
 import { checkPathFilter } from "../utils";
-import { hash } from "ohash";
-
-const queryCache = new Map<string, Document[]>();
-
-export const retrieveWithParents = async (options: {
-	query: string;
-	kPerQuery?: number;
-	maxParents?: number;
-	similarityThreshold?: number;
-	owner: string;
-	repo: string;
-	installationId: number;
-	cache?: boolean;
-}) => {
-	const {
-		query,
-		kPerQuery = 6,
-		maxParents = 10,
-		similarityThreshold = 0.7,
-		owner,
-		repo,
-		installationId,
-		cache = true,
-	} = options;
-
-	if (!query?.trim()) return [];
-
-	const cacheKey = hash({ query, owner, repo, installationId });
-	if (cache && queryCache.has(cacheKey)) {
-		return queryCache.get(cacheKey)!;
-	}
-	const embeddingModel = new OllamaEmbeddings({
-		model: embeddingModelName,
-		baseUrl: embeddingModelUrl,
-	});
-
-	const queryEmbedded = await embeddingModel.embedQuery(query);
-
-	const chromaStore = new Chroma(embeddingModel, {
-		collectionName: "repo_embeddings",
-		collectionMetadata: {
-			installationId,
-			repoId: `${owner}/${repo}`,
-		},
-		clientParams: {
-			host: vectorDBHost,
-			port: vectorDBPort,
-			ssl: vectorDBSSL,
-		},
-	});
-
-	let results: [Document, number][] = [];
-	try {
-		results = await chromaStore.similaritySearchVectorWithScore(
-			//@ts-ignore
-			[queryEmbedded],
-			kPerQuery,
-			{
-				repoId: { $eq: `${owner}/${repo}` },
-			}
-		);
-	} catch (err) {
-		console.error("Chroma search failed:", err);
-		return [];
-	}
-
-	const filtered = results.filter(([_, score]) => score >= similarityThreshold);
-	if (filtered.length === 0) return [];
-
-	const byParent = new Map<string, Document[]>();
-	for (const [doc] of filtered) {
-		const parentId = doc.metadata?.parentId || doc.metadata?.source || "root";
-		if (!byParent.has(parentId)) byParent.set(parentId, []);
-		byParent.get(parentId)!.push(doc);
-	}
-
-	const parents = Array.from(byParent.entries()).slice(0, maxParents);
-
-	const expanded: Document[] = [];
-	for (const [, docs] of parents) {
-		const sorted = docs.sort(
-			(a, b) => (a.metadata?.start ?? 0) - (b.metadata?.start ?? 0)
-		);
-
-		let buffer = "";
-		for (const d of sorted) {
-			buffer += d.pageContent + "\n";
-		}
-		const firstMeta = sorted[0]?.metadata ?? {};
-		const mergedDoc = new Document({
-			pageContent: buffer.trim(),
-			metadata: firstMeta,
-		});
-		expanded.push(mergedDoc);
-	}
-
-	if (cache) queryCache.set(cacheKey, expanded);
-
-	return expanded;
-};
 
 export const retrievePRFiles = async (
 	State: typeof PullRequestGraphState.State
@@ -246,10 +135,47 @@ export const retrievePRFiles = async (
 		console.log("Skipped: filteredSelectedFiles is null");
 		return;
 	}
+
+	const configFileContents: Record<string, string> = {};
+	if (
+		State.repo &&
+		State.repo.repoConfig &&
+		State.repo.repoConfig.reviewConfig.aiReviewEnabled
+	) {
+		const configFiles = [
+			".eslintrc.json",
+			".prettierrc",
+			"tsconfig.json",
+			"package.json",
+		];
+
+		for (const path of configFiles) {
+			try {
+				const fileResponse = await octokit.rest.repos.getContent({
+					owner: State.owner,
+					repo: State.repoName,
+					path,
+					ref: pr.data.head.ref,
+				});
+
+				if (
+					!Array.isArray(fileResponse.data) &&
+					"content" in fileResponse.data
+				) {
+					const buff = Buffer.from(fileResponse.data.content, "base64");
+					configFileContents[path] = buff.toString("utf-8");
+				}
+			} catch (err) {
+				configFileContents[path] = "";
+			}
+		}
+	}
+
 	return {
 		...State,
 		unReviewedFiles: filterSelectedFiles,
 		commits: commits,
+		repoConfigFiles: configFileContents,
 	};
 };
 

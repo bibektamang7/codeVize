@@ -29,6 +29,7 @@ export const getRepository = asyncHandler(
 
 export const getAllRepositories = asyncHandler(
 	async (req: Request, res: Response) => {
+		console.log("this is user id", req.user.id);
 		const repositories = await prisma.repo.findMany({
 			where: {
 				userId: req.user.id,
@@ -39,6 +40,7 @@ export const getAllRepositories = asyncHandler(
 				isActive: true,
 			},
 		});
+		console.log("this is repos ", repositories);
 		res.status(200).json({ success: true, repositories: repositories || [] });
 	}
 );

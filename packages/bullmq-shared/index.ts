@@ -1,8 +1,8 @@
 import {
 	enqueueReview,
 	deleteEmbedding,
-	embedRepo,
+	// embedRepo,
 	issueTriageSuggestion,
 } from "./queues";
 
-export { embedRepo, deleteEmbedding, enqueueReview, issueTriageSuggestion };
+export { deleteEmbedding, enqueueReview, issueTriageSuggestion };

@@ -22,10 +22,9 @@
 		"@octokit/rest": "^22.0.0",
 		"@octokit/types": "^14.1.0",
 		"@octokit/webhooks": "^14.1.2",
-		"octokit": "^5.0.3",
+		"bullmq-shared": "*",
 		"db": "*",
-		"langflows": "*",
 		"logger": "*",
-		"bullmq-shared": "*"
+		"octokit": "^5.0.3"
 	}
 }
