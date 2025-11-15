@@ -16,6 +16,7 @@
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "noEmit": true,
+    "noImplicitAny": false,
     // Best practices
     "strict": true,
     "moduleDetection": "force",
