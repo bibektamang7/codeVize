@@ -66,8 +66,8 @@ const SubscriptionPage = async () => {
 					Subscription Plans
 				</h1>
 				<p className="text-muted-foreground max-w-2xl mx-auto">
-					Choose the plan that fits your team's needs. All plans include our
-					core AI-powered features.
+					Choose the plan that fits your team&apos;s needs. All plans include
+					our core AI-powered features.
 				</p>
 			</div>
 
@@ -81,8 +81,8 @@ const SubscriptionPage = async () => {
 							key={plan.id}
 							className={`relative rounded-2xl border ${
 								isPopular
-									? "border-indigo-500/50 bg-gradient-to-b from-indigo-900/10 to-black/80 shadow-lg shadow-indigo-500/20"
-									: "border-[#ffffff1a] bg-gradient-to-b from-[#ffffff05] to-black/50"
+									? "border-indigo-500/50 bg-linear-to-b from-indigo-900/10 to-black/80 shadow-lg shadow-indigo-500/20"
+									: "border-[#ffffff1a] bg-linear-to-b from-[#ffffff05] to-black/50"
 							} flex flex-col`}
 						>
 							{isPopular && (
@@ -132,7 +132,7 @@ const SubscriptionPage = async () => {
 											className="flex items-start gap-2"
 										>
 											<CheckCircle
-												className="text-green-500 mt-0.5 flex-shrink-0"
+												className="text-green-500 mt-0.5 shrink-0"
 												size={18}
 											/>
 											<span className="text-muted-foreground text-sm">

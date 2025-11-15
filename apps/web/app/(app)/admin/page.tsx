@@ -1,42 +1,50 @@
 "use client";
 
-import { act, useEffect, useState } from "react";
-import { BarChart3, GitBranch, Users, CreditCard, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { BarChart3, GitBranch, Users, CreditCard } from "lucide-react";
 import adminApiService from "@/lib/adminApiService";
-import { useSession } from "next-auth/react";
 import { Activity, Stats } from "@/types/model.types";
 import { formatRelativeTime } from "@/lib/utils";
 import LoaderComponent from "@/components/Loader";
+import { useAuthUser } from "@/hooks/useAuthUser";
+import { useRouter } from "next/navigation";
 
 const DashboardPage = () => {
-	const session = useSession();
+	const router = useRouter();
+	const { isAuthenticated, status, user } = useAuthUser();
 	const [stats, setStats] = useState<Stats | null>(null);
 	const [activity, setActivity] = useState<Activity | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	useEffect(() => {
-		const fetchDashboardStats = async () => {
-			try {
-				setLoading(true);
-				const response = await adminApiService.getDashboardStats(
-					session.data?.user?.token!
-				);
-				console.log(response, "this i in dadmin")
-				setActivity(response.activity);
-				setStats(response.stats);
-			} catch (err: any) {
-				console.error("Error fetching dashboard stats:", err);
-				setError(
-					err.response?.data?.message || "Failed to fetch dashboard statistics"
-				);
-			} finally {
-				setLoading(false);
-			}
-		};
+	const fetchDashboardStats = useCallback(async () => {
+		if (!user) {
+			setLoading(false);
+			return;
+		}
+		try {
+			setLoading(true);
+			setError(null);
+			const response = await adminApiService.getDashboardStats(user.token);
+			console.log(response, "this i in dadmin");
+			setActivity(response.activity);
+			setStats(response.stats);
+		} catch (err: any) {
+			setError(
+				err.response?.data?.message || "Failed to fetch dashboard statistics"
+			);
+		} finally {
+			setLoading(false);
+		}
+	}, [user]);
 
-		fetchDashboardStats();
-	}, []);
+	useEffect(() => {
+		if (isAuthenticated && user) {
+			fetchDashboardStats();
+		} else if (status === "authenticated" && !isAuthenticated) {
+			router.push("/login");
+		}
+	}, [router, fetchDashboardStats, isAuthenticated, status, user]);
 
 	const statCards = stats
 		? [
@@ -67,7 +75,7 @@ const DashboardPage = () => {
 			]
 		: [];
 
-	if (loading) {
+	if (status === "loading" || (loading && !stats)) {
 		return <LoaderComponent />;
 	}
 
@@ -96,7 +104,7 @@ const DashboardPage = () => {
 				<div>
 					<h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
 					<p className="text-gray-600 mt-1">
-						Welcome back! Here's what's happening today.
+						Welcome back! Here&apos;s what&apos;s happening today.
 					</p>
 				</div>
 				<div className="text-sm text-gray-500 bg-gray-100 rounded-lg px-3 py-2">

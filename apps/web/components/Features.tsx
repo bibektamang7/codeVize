@@ -16,11 +16,12 @@ const Features = () => {
 			name: "Intelligent Code Reviews",
 			background: (
 				<Image
-					src={"/review.png"}
-					width={10}
-					height={10}
-					className="w-full h-full"
+					src={"/review.webp"}
+					width={500}
+					height={400}
+					className="w-full h-50 inset-0 object-cover  opacity-90"
 					alt="review image"
+					loading="lazy"
 				/>
 			),
 		},
@@ -37,11 +38,11 @@ const Features = () => {
 
 			background: (
 				<Image
-					src={"/review.png"}
-					width={10}
-					height={10}
-					className="w-full h-full"
-					alt="review image"
+					src={"/summary.webp"}
+					width={1000}
+					height={1000}
+					className="inset-0 object-cover  w-full h-full opacity-90"
+					alt="summary image"
 					loading="lazy"
 				/>
 			),
@@ -59,11 +60,12 @@ const Features = () => {
 
 			background: (
 				<Image
-					src={"/review.png"}
-					width={10}
-					height={10}
-					className="w-full h-full"
-					alt="review image"
+					src={"/team.webp"}
+					width={1000}
+					height={1000}
+					className="inset-0 object-cover w-full h-full opacity-90"
+					alt="team collaboration image"
+					loading="lazy"
 				/>
 			),
 		},
@@ -79,11 +81,12 @@ const Features = () => {
 			icon: Zap,
 			background: (
 				<Image
-					src={"/review.png"}
-					height={10}
-					width={10}
-					className="inset-0 object-cover w-full h-full"
-					alt="review image"
+					src={"/fast.webp"}
+					height={1000}
+					width={1000}
+					className=" object-contain w-full h-50 opacity-90"
+					alt="performance image"
+					loading="lazy"
 				/>
 			),
 		},

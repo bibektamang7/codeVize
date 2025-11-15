@@ -1,11 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Search, Trash2, Loader2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search, Trash2 } from "lucide-react";
 import adminApiService from "@/lib/adminApiService";
-import { useSession } from "next-auth/react";
 import { Pagination } from "../payments/page";
 import LoaderComponent from "@/components/Loader";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
 interface User {
 	id: string;
@@ -19,7 +20,6 @@ interface User {
 }
 
 const UsersPage = () => {
-	const session = useSession();
 	const [users, setUsers] = useState<User[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -28,47 +28,61 @@ const UsersPage = () => {
 	const [pagination, setPagination] = useState<Pagination | null>(null);
 	const [currentPage, setCurrentPage] = useState(1);
 
-	useEffect(() => {
-		fetchUsers();
-	}, [searchTerm, currentPage]);
+	const router = useRouter();
+	const { isAuthenticated, status, user } = useAuthUser();
 
-	const fetchUsers = async () => {
+	const fetchUsers = useCallback(async () => {
+		if (!user) {
+			setLoading(false);
+			return;
+		}
 		try {
 			setLoading(true);
-			const response = await adminApiService.getAllUsers(
-				session.data?.user?.token!,
-				{
-					search: searchTerm,
-					page: currentPage,
-					limit: 10,
-				}
-			);
+			const response = await adminApiService.getAllUsers(user.token, {
+				search: searchTerm,
+				page: currentPage,
+				limit: 10,
+			});
 			setUsers(response.users);
 			setPagination(response.pagination);
 		} catch (err: any) {
-			console.error("Error fetching users:", err);
 			setError(err.response?.data?.message || "Failed to fetch users");
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [user, searchTerm, currentPage]);
 
 	const handleDeleteUser = async (userId: string) => {
-		if (confirm("Are you sure you want to delete this user?")) {
+		if (confirm("Are you sure you want to delete this user?") && user) {
 			try {
-				await adminApiService.deleteUser(userId, session.data?.user?.token!);
+				await adminApiService.deleteUser(userId, user.token);
 				fetchUsers();
 				if (selectedUser === userId) {
 					setSelectedUser(null);
 				}
 			} catch (err: any) {
-				console.error("Error deleting user:", err);
 				setError(err.response?.data?.message || "Failed to delete user");
 			}
 		}
 	};
 
-	if (loading) {
+	useEffect(() => {
+		if (isAuthenticated && user) {
+			fetchUsers();
+		} else if (status === "authenticated" && !isAuthenticated) {
+			router.push("/login");
+		}
+	}, [
+		searchTerm,
+		currentPage,
+		fetchUsers,
+		user,
+		status,
+		isAuthenticated,
+		router,
+	]);
+
+	if (status === "loading" || loading) {
 		return <LoaderComponent />;
 	}
 

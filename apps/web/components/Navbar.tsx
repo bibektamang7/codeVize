@@ -4,6 +4,7 @@ import Link from "next/link";
 import React from "react";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 const navbarList = [
 	{
@@ -30,8 +31,20 @@ const Navbar = () => {
 	return (
 		<header className="flex items-center justify-between px-8 py-6">
 			<div className="flex items-center gap-4">
-				<div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center shadow-md"></div>
-				<Link href={"/"} className="font-semibold">Codevize</Link>
+				<Image
+					src={"/code.webp"}
+					alt="CodeVize's logo"
+					width={9}
+					height={9}
+					className="w-9 h-9 rounded-full"
+					loading="lazy"
+				/>
+				<Link
+					href={"/"}
+					className="font-semibold"
+				>
+					Codevize
+				</Link>
 			</div>
 
 			<nav className="flex items-center gap-6">

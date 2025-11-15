@@ -1,18 +1,13 @@
 import NextAuth, { NextAuthResult, Profile } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import { retryApiCall, CircuitBreaker } from "@/lib/utils";
-import axios from "axios";
-
-const apiClient = axios.create({
-	timeout: 10000,
-});
 
 const circuitBreaker = new CircuitBreaker();
 
 const backendURL = process.env.BACKEND_URL;
 
 if (!backendURL) {
-	console.error("BACKEND_BASE_URL environment variable is not set");
+	console.error("BACKEND_URL environment variable is not set");
 }
 
 type GithubProfile = Profile & {
@@ -29,6 +24,24 @@ if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
 if (!process.env.AUTH_SECRET) {
 	throw new Error("Missing AUTH_SECRET in environment variables.");
 }
+
+const postJson = async (url: string, body: any): Promise<Response> => {
+	const response = await fetch(url, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(body),
+	});
+
+	if (!response.ok) {
+		throw Object.assign(new Error(`HTTP error! status: ${response.status}`), {
+			response,
+		});
+	}
+
+	return response;
+};
 
 const nextAuth = NextAuth({
 	providers: [
@@ -56,15 +69,16 @@ const nextAuth = NextAuth({
 			try {
 				const loginResponse = await retryApiCall(() =>
 					circuitBreaker.call(() =>
-						apiClient.post(`${backendURL}/users/login`, {
+						postJson(`${backendURL}/users/login`, {
 							githubId: githubProfile.id,
 							email: githubProfile.email,
 						})
 					)
 				);
-				user.id = loginResponse.data.user.id;
-				user.token = loginResponse.data.token;
-				user.plan = loginResponse.data.user.planName;
+				const loginData = await loginResponse.json();
+				user.id = loginData.user.id;
+				user.token = loginData.token;
+				user.plan = loginData.user.planName;
 			} catch (error: any) {
 				console.error(`Login failed for user: ${githubProfile.email}`, error);
 				if (
@@ -74,7 +88,7 @@ const nextAuth = NextAuth({
 					try {
 						const signUpResponse = await retryApiCall(() =>
 							circuitBreaker.call(() =>
-								apiClient.post(`${backendURL}/users/register`, {
+								postJson(`${backendURL}/users/register`, {
 									githubId: githubProfile.id,
 									email: githubProfile.email,
 									username: githubProfile.login,
@@ -82,11 +96,12 @@ const nextAuth = NextAuth({
 								})
 							)
 						);
-
-						user.id = signUpResponse.data.user.id;
-						user.token = signUpResponse.data.token;
-						user.plan = signUpResponse.data.user.planName;
+						const signUpData = await signUpResponse.json();
+						user.id = signUpData.user.id;
+						user.token = signUpData.token;
+						user.plan = signUpData.user.planName;
 					} catch (registerError: any) {
+						console.log("Failed to signup user Email: ", githubProfile.email);
 						return false;
 					}
 				} else {
@@ -98,7 +113,7 @@ const nextAuth = NextAuth({
 
 		async jwt({ token, account, user, profile, trigger, session }) {
 			if (trigger === "update" && session.user) {
-				console.log("thisis callled after plan is update");
+				console.log("this is called after plan is updated");
 				console.log("this is token and session", token);
 				return { ...token, ...session };
 			}

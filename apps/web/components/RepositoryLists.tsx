@@ -1,9 +1,7 @@
 import { useLoading } from "@/hooks/useLoading";
 import { repositoryAPI } from "@/lib/api";
 import { RepositoryProps } from "@/types/model.types";
-import axios from "axios";
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import LoaderComponent from "./Loader";
 import {
@@ -35,9 +33,11 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "./ui/alert-dialog";
+import { useRouter } from "next/navigation";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
 const RepositoryLists = () => {
-	const session = useSession();
+	const router = useRouter();
 	const [search, setSearch] = useState("");
 	const [repos, setRepos] = useState<RepositoryProps[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -47,23 +47,20 @@ const RepositoryLists = () => {
 		null
 	);
 
-	const toggleRepositoryActivationCall = useLoading(
-		(repoId: string, isActive: boolean) =>
-			isActive
-				? repositoryAPI.deactivateRepository(repoId, session.data?.user?.token!)
-				: repositoryAPI.activateRepository(repoId, session.data?.user?.token!),
-		"Repository status updated successfully!",
-		"Failed to update repository status"
-	);
+	const { isAuthenticated, status, user } = useAuthUser();
 
-	const fetchRepositories = async () => {
+	const fetchRepositories = useCallback(async () => {
 		try {
+			if (!user || !user.token) {
+				setLoading(false);
+				return;
+			}
 			const response = await fetch(
 				`${process.env.NEXT_PUBLIC_BACKEND_URL}/repositories/`,
 				{
 					method: "GET",
 					headers: {
-						Authorization: `Bearer ${session.data?.user?.token}`,
+						Authorization: `Bearer ${user.token}`,
 					},
 					next: {
 						revalidate: 60 * 3,
@@ -73,18 +70,33 @@ const RepositoryLists = () => {
 			const result = await response.json();
 			setRepos(result.repositories || []);
 		} catch (error) {
+			console.error("Failed to fetch repositories", error);
 			toast.error("Something went wrong, please try again.");
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [user]);
+
+	const toggleRepositoryActivationCall = useLoading(
+		(repoId: string, isActive: boolean) =>
+			isActive
+				? repositoryAPI.deactivateRepository(repoId, user?.token)
+				: repositoryAPI.activateRepository(repoId, user?.token),
+		"Repository status updated successfully!",
+		"Failed to update repository status"
+	);
 
 	useEffect(() => {
-		if (session.status === "authenticated") {
-			alert("called");
+		if (status === "authenticated" && user) {
 			fetchRepositories();
 		}
-	}, [session.status]);
+	}, [status, user, fetchRepositories]);
+
+	useEffect(() => {
+		if (status !== "loading" && !isAuthenticated) {
+			router.push("/login");
+		}
+	}, [isAuthenticated, status, router]);
 
 	const handleToggleActivation = async (repo: RepositoryProps) => {
 		if (!repo.id) return;
@@ -115,7 +127,15 @@ const RepositoryLists = () => {
 		r.repoName.toLowerCase().includes(search.toLowerCase())
 	);
 
-	if (loading || !session || !session.data) {
+	if (status === "loading") {
+		return <LoaderComponent />;
+	}
+
+	if (!isAuthenticated) {
+		return null;
+	}
+
+	if (loading) {
 		return (
 			<div className="flex justify-center py-12">
 				<LoaderComponent />
@@ -163,7 +183,7 @@ const RepositoryLists = () => {
 									<Link
 										href={`/dashboard/repo/${repo.id}`}
 										className="flex-1 block transition-colors hover:bg-accent hover:text-accent-foreground duration-200 rounded-lg p-2 -m-2"
-										aria-label={`Navigate to ${repo.repoName} settings`}
+										aria-label={`Maps to ${repo.repoName} settings`}
 									>
 										<div
 											role="listitem"
@@ -267,7 +287,8 @@ const RepositoryLists = () => {
 						<AlertDialogDescription>
 							Are you sure you want to{" "}
 							{selectedRepo?.isActive ? "deactivate " : "activate "}
-							the repository "<strong>{selectedRepo?.repoName}</strong>"?
+							the repository &quot;<strong>{selectedRepo?.repoName}</strong>
+							&quot;?
 							{selectedRepo?.isActive
 								? " This will stop all AI analysis."
 								: " This will start AI analysis."}

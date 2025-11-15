@@ -16,7 +16,7 @@ const Products = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-gradient-to-b from-[#ffffff05] to-black/50 rounded-2xl border border-[#ffffff1a] p-8">
+          <div className="bg-linear-to-b from-[#ffffff05] to-black/50 rounded-2xl border border-[#ffffff1a] p-8">
             <h3 className="text-2xl font-bold text-white mb-4">AI PR Reviews</h3>
             <p className="text-muted-foreground mb-6">
               Automated pull request reviews with intelligent suggestions to improve code quality and maintainability.
@@ -40,7 +40,7 @@ const Products = () => {
             </Button>
           </div>
 
-          <div className="bg-gradient-to-b from-[#ffffff05] to-black/50 rounded-2xl border border-[#ffffff1a] p-8">
+          <div className="bg-linear-to-b from-[#ffffff05] to-black/50 rounded-2xl border border-[#ffffff1a] p-8">
             <h3 className="text-2xl font-bold text-white mb-4">Issue Tagging</h3>
             <p className="text-muted-foreground mb-6">
               Automatically categorize and label issues based on content analysis and historical patterns.
@@ -64,7 +64,7 @@ const Products = () => {
             </Button>
           </div>
 
-          <div className="bg-gradient-to-b from-[#ffffff05] to-black/50 rounded-2xl border border-[#ffffff1a] p-8">
+          <div className="bg-linear-to-b from-[#ffffff05] to-black/50 rounded-2xl border border-[#ffffff1a] p-8">
             <h3 className="text-2xl font-bold text-white mb-4">Team Analytics</h3>
             <p className="text-muted-foreground mb-6">
               Comprehensive analytics and insights to improve team productivity and code quality.

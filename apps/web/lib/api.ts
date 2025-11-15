@@ -11,16 +11,8 @@ const api = axios.create({
 });
 
 export const repositoryAPI = {
-	// deleteRepository: async (repoId: string, token: string) => {
-	// 	const response = await api.delete(`/repositories/repository/${repoId}`, {
-	// 		headers: {
-	// 			Authorization: `Bearer ${token}`,
-	// 		},
-	// 	});
-	// 	return response;
-	// },
-
-	activateRepository: async (repoId: string, token: string) => {
+		activateRepository: async (repoId: string, token: string | undefined) => {
+		if (!token) return;
 		const response = await api.post(
 			`/repositories/repository/${repoId}/activate`,
 			{},
@@ -33,7 +25,8 @@ export const repositoryAPI = {
 		return response;
 	},
 
-	deactivateRepository: async (repoId: string, token: string) => {
+	deactivateRepository: async (repoId: string, token: string | undefined) => {
+		if (!token) return;
 		const response = await api.post(
 			`/repositories/repository/${repoId}/deactivate`,
 			{},

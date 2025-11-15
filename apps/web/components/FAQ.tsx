@@ -56,7 +56,7 @@ const FAQ = () => {
 							className="border border-[#ffffff1a] rounded-xl overflow-hidden"
 						>
 							<button
-								className="w-full flex justify-between items-center p-6 text-left bg-gradient-to-b from-[#ffffff03] to-transparent hover:from-[#ffffff08]"
+								className="w-full flex justify-between items-center p-6 text-left bg-linear-to-b from-[#ffffff03] to-transparent hover:from-[#ffffff08]"
 								onClick={() => toggleFAQ(index)}
 							>
 								<span className="text-lg font-medium text-slate-300">

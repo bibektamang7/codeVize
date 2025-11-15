@@ -1,9 +1,13 @@
 "use client";
-import { Suspense, lazy } from "react";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import LoaderComponent from "@/components/Loader";
-const RepositoryLists = lazy(() => import("@/components/RepositoryLists"));
+const RepositoryLists = dynamic(() => import("@/components/RepositoryLists"), {
+	loading: () => <LoaderComponent />,
+	ssr: false,
+});
 
 const DashboardPage = () => {
 	const handleConnectGithubApp = () => {

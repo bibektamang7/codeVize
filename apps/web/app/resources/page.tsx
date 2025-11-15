@@ -51,7 +51,7 @@ const Resources = () => {
 					{resources.map((resource, index) => (
 						<div
 							key={index}
-							className="bg-gradient-to-b from-[#ffffff05] to-black/50 rounded-xl border border-[#ffffff1a] p-6 hover:border-indigo-500/30 transition-colors"
+							className="bg-linear-to-b from-[#ffffff05] to-black/50 rounded-xl border border-[#ffffff1a] p-6 hover:border-indigo-500/30 transition-colors"
 						>
 							<div className="text-indigo-500 mb-4">{resource.icon}</div>
 							<h3 className="text-xl font-semibold text-white mb-2">
@@ -67,7 +67,7 @@ const Resources = () => {
 					))}
 				</div>
 
-				<div className="bg-gradient-to-b from-[#ffffff05] to-black/50 rounded-2xl border border-[#ffffff1a] p-8 mb-16">
+				<div className="bg-linear-to-b from-[#ffffff05] to-black/50 rounded-2xl border border-[#ffffff1a] p-8 mb-16">
 					<h2 className="text-2xl font-bold text-slate-300 mb-4">
 						Help Center
 					</h2>

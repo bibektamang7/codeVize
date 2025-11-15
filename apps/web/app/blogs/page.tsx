@@ -54,7 +54,9 @@ const Blog = () => {
 			<div className="max-w-6xl mx-auto">
 				<Navbar />
 				<div className="text-center mb-16 mt-8">
-					<h1 className="text-4xl md:text-6xl font-bold mb-4 text-slate-100">Blog</h1>
+					<h1 className="text-4xl md:text-6xl font-bold mb-4 text-slate-100">
+						Blog
+					</h1>
 					<p className="text-muted-foreground text-lg max-w-2xl mx-auto">
 						Insights, tutorials, and stories from the Codevize team and
 						community.
@@ -67,7 +69,7 @@ const Blog = () => {
 							{blogPosts.map((post) => (
 								<div
 									key={post.id}
-									className="bg-gradient-to-b from-[#ffffff05] to-black/50 rounded-xl border border-[#ffffff1a] p-6 hover:border-indigo-500/30 transition-colors"
+									className="bg-linear-to-b from-[#ffffff05] to-black/50 rounded-xl border border-[#ffffff1a] p-6 hover:border-indigo-500/30 transition-colors"
 								>
 									<div className="flex items-center gap-2 mb-3">
 										<span className="px-2 py-1 rounded-full bg-indigo-500/20 text-indigo-400 text-xs">
@@ -118,7 +120,7 @@ const Blog = () => {
 					</div>
 
 					<div>
-						<div className="bg-gradient-to-b from-[#ffffff05] to-black/50 rounded-xl border border-[#ffffff1a] p-6 mb-8">
+						<div className="bg-linear-to-b from-[#ffffff05] to-black/50 rounded-xl border border-[#ffffff1a] p-6 mb-8">
 							<h3 className="text-xl font-bold text-slate-300 mb-4">
 								Subscribe to our Newsletter
 							</h3>
@@ -137,7 +139,7 @@ const Blog = () => {
 							</div>
 						</div>
 
-						<div className="bg-gradient-to-b from-[#ffffff05] to-black/50 rounded-xl border border-[#ffffff1a] p-6">
+						<div className="bg-linear-to-b from-[#ffffff05] to-black/50 rounded-xl border border-[#ffffff1a] p-6">
 							<h3 className="text-xl font-bold text-slate-300 mb-4">
 								Popular Categories
 							</h3>

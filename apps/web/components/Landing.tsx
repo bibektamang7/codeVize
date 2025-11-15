@@ -1,18 +1,6 @@
-// import Navbar from "@/components/Navbar";
-// import React from "react";
-
-// const LandingPage = () => {
-// 	return (
-// 		<div className="bg-black text-white h-screen px-4 py-2 md:px-40 py-4">
-// 			<Navbar />
-// 		</div>
-// 	);
-// };
-
-// export default LandingPage;
-
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import React from "react";
 
 export default function CodevizeLanding() {
@@ -25,7 +13,7 @@ export default function CodevizeLanding() {
 						className="absolute -top-24 left-1/2 transform -translate-x-1/2 w-[420px] h-[300px] pointer-events-none"
 						style={{ filter: "blur(48px)" }}
 					>
-						<div className="w-full h-full rounded-full bg-gradient-to-b from-indigo-400 to-transparent opacity-30" />
+						<div className="w-full h-full rounded-full bg-linear-to-b from-indigo-400 to-transparent opacity-30" />
 					</div>
 
 					<div className="pt-6">
@@ -52,28 +40,8 @@ export default function CodevizeLanding() {
 							</p>
 
 							<div className="mt-8 flex items-center gap-4">
-								{/* <div className="rounded-full bg-[rgba(255,255,255,0.02)] px-6 py-3 flex items-center gap-4 border border-[rgba(255,255,255,0.04)]">
-									<input
-										className="bg-transparent outline-none text-sm w-[420px] placeholder:opacity-60"
-										placeholder="Enter GitHub Repo URL"
-									/>
-								</div> */}
 								<Button>Book a Demo</Button>
 
-								{/* <svg
-										className="opacity-80"
-										width="18"
-										height="18"
-										viewBox="0 0 24 24"
-										fill="none"
-									>
-										<path
-											d="M3 12h18"
-											stroke="currentColor"
-											strokeWidth="1.5"
-											strokeLinecap="round"
-										/>
-									</svg> */}
 								<Button className="rounded-full bg-white text-black px-6 py-3 font-medium shadow-[0_8px_24px_rgba(99,102,241,0.2)]">
 									Analyze Now
 								</Button>
@@ -85,7 +53,7 @@ export default function CodevizeLanding() {
 						<div className="rounded-[26px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.03)] p-6 -translate-y-6">
 							<div className="grid grid-cols-12 gap-6 items-center">
 								<div className="col-span-4 bg-[rgba(255,255,255,0.01)] rounded-lg p-4">
-									<div className="h-20 rounded-md bg-gradient-to-br from-[rgba(255,255,255,0.02)] to-transparent p-3">
+									<div className="h-20 rounded-md bg-linear-to-br from-[rgba(255,255,255,0.02)] to-transparent p-3">
 										<div className="flex items-center gap-2 text-xs">
 											<span className="px-2 py-1 rounded-full bg-indigo-600/20">
 												Linked
@@ -130,10 +98,12 @@ export default function CodevizeLanding() {
 					<div className="mt-6 rounded-[28px] bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] p-6 border border-[rgba(255,255,255,0.03)]">
 						<div className="grid grid-cols-3 gap-6">
 							<div className="col-span-1 bg-[rgba(255,255,255,0.015)] rounded-lg p-4">
-								<div className="h-32 rounded-lg bg-gradient-to-br from-[#0b1010] to-transparent p-3">
+								<div className="h-32 rounded-lg bg-linear-to-br from-[#0b1010] to-transparent p-3">
 									<div className="flex items-center justify-between">
-										<div className="flex items-center gap-3">
-											<div className="w-8 h-8 rounded-md bg-white/6" />
+										<div className="relative flex items-center gap-3">
+											<div className="w-12 h-12 rounded-full bg-white/6 flex items-center justify-center">
+												🔖
+											</div>
 											<div className="text-xs opacity-70">PR Insights</div>
 										</div>
 										<div className="text-xs opacity-60">...</div>

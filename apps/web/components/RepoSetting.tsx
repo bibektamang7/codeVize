@@ -231,21 +231,23 @@ const settingsConfig: SettingsSection = {
 	],
 };
 
-const SettingsCard: React.FC<{
+interface SettingCardProps {
 	title: string;
 	settings: Setting[];
 	stateValues: SettingsValues;
 	setStateValues: React.Dispatch<React.SetStateAction<SettingsValues>>;
 	isProOrEnterprise: boolean;
 	isEnterprise: boolean;
-}> = ({
+}
+
+const SettingsCard = ({
 	title,
 	settings,
 	stateValues,
 	setStateValues,
 	isProOrEnterprise,
 	isEnterprise,
-}) => {
+}: SettingCardProps) => {
 	const updateState = (id: string, value: string | boolean) => {
 		setStateValues((prev) => ({ ...prev, [id]: value }));
 	};

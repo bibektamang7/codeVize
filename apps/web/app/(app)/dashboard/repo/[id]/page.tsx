@@ -1,4 +1,4 @@
-import RepoSettings from "@/pages/RepoSetting";
+import RepoSettings from "@/components/RepoSetting";
 import { redirect } from "next/navigation";
 import { auth } from "@/app/api/auth/[...nextauth]/auth";
 import axios from "axios";

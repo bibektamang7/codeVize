@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, GitBranch, Trash2, Loader2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search, GitBranch, Trash2 } from "lucide-react";
 import adminApiService from "@/lib/adminApiService";
-import { useSession } from "next-auth/react";
 import { RepositoryProps as Repository } from "@/types/model.types";
 import { Pagination } from "../payments/page";
 import LoaderComponent from "@/components/Loader";
+import { useRouter } from "next/navigation";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
 const RepositoriesPage = () => {
-	const session = useSession();
 	const [repositories, setRepositories] = useState<Repository[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -18,69 +18,61 @@ const RepositoriesPage = () => {
 	const [pagination, setPagination] = useState<Pagination | null>(null);
 	const [currentPage, setCurrentPage] = useState(1);
 
-	useEffect(() => {
-		fetchRepositories();
-	}, [searchTerm, currentPage]);
+	const router = useRouter();
+	const { isAuthenticated, status, user } = useAuthUser();
 
-	const fetchRepositories = async () => {
+	const fetchRepositories = useCallback(async () => {
+		if (!user) {
+			setLoading(false);
+			return;
+		}
 		try {
 			setLoading(true);
-			const response = await adminApiService.getAllRepositories(
-				session.data?.user?.token!,
-				{
-					search: searchTerm,
-					page: currentPage,
-					limit: 10,
-				}
-			);
+			const response = await adminApiService.getAllRepositories(user.token, {
+				search: searchTerm,
+				page: currentPage,
+				limit: 10,
+			});
 			setRepositories(response.repositories);
 			setPagination(response.pagination);
 		} catch (err: any) {
-			console.error("Error fetching repositories:", err);
 			setError(err.response?.data?.message || "Failed to fetch repositories");
 		} finally {
 			setLoading(false);
 		}
-	};
-
-	const handleToggleStatus = async (repoId: string) => {
-		const repo = repositories.find((r) => r.id === repoId);
-		if (!repo) return;
-
-		try {
-			await adminApiService.toggleRepositoryStatus(
-				repoId,
-				!repo.isActive,
-				session.data?.user?.token!
-			);
-			fetchRepositories();
-		} catch (err: any) {
-			console.error("Error toggling repository status:", err);
-			setError(
-				err.response?.data?.message || "Failed to toggle repository status"
-			);
-		}
-	};
+	}, [user, searchTerm, currentPage]);
 
 	const handleDeleteRepository = async (repoId: string) => {
-		if (confirm("Are you sure you want to delete this repository?")) {
+		if (confirm("Are you sure you want to delete this repository?") && user) {
 			try {
-				await adminApiService.deleteRepository(
-					repoId,
-					session.data?.user?.token!
-				);
+				await adminApiService.deleteRepository(repoId, user.token);
 				fetchRepositories();
 				if (selectedRepo === repoId) {
 					setSelectedRepo(null);
 				}
 			} catch (err: any) {
-				console.error("Error deleting repository:", err);
 				setError(err.response?.data?.message || "Failed to delete repository");
 			}
 		}
 	};
 
-	if (loading) {
+	useEffect(() => {
+		if (isAuthenticated && user) {
+			fetchRepositories();
+		} else if (status === "authenticated" && !isAuthenticated) {
+			router.push("/login");
+		}
+	}, [
+		router,
+		isAuthenticated,
+		searchTerm,
+		currentPage,
+		fetchRepositories,
+		user,
+		status,
+	]);
+
+	if (status === "loading" || loading) {
 		return <LoaderComponent />;
 	}
 

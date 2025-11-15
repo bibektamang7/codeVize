@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Search, Eye } from "lucide-react";
 import adminApiService from "@/lib/adminApiService";
-import { useSession } from "next-auth/react";
 import LoaderComponent from "@/components/Loader";
+import { useRouter } from "next/navigation";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
 interface Payment {
 	id: string;
@@ -26,7 +27,8 @@ export interface Pagination {
 }
 
 const PaymentsPage = () => {
-	const session = useSession();
+	const router = useRouter();
+	const { isAuthenticated, status, user } = useAuthUser();
 	const [payments, setPayments] = useState<Payment[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -35,30 +37,42 @@ const PaymentsPage = () => {
 	const [pagination, setPagination] = useState<Pagination | null>(null);
 	const [currentPage, setCurrentPage] = useState(1);
 
-	useEffect(() => {
-		fetchPayments();
-	}, [searchTerm, currentPage]);
-
-	const fetchPayments = async () => {
+	const fetchPayments = useCallback(async () => {
+		if (!user) {
+			setLoading(false);
+			return;
+		}
 		try {
 			setLoading(true);
-			const response = await adminApiService.getAllPayments(
-				session.data?.user?.token!,
-				{
-					search: searchTerm,
-					page: currentPage,
-					limit: 10,
-				}
-			);
+			const response = await adminApiService.getAllPayments(user.token, {
+				search: searchTerm,
+				page: currentPage,
+				limit: 10,
+			});
 			setPayments(response.payments);
 			setPagination(response.pagination);
 		} catch (err: any) {
-			console.error("Error fetching payments:", err);
 			setError(err.response?.data?.message || "Failed to fetch payments");
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [searchTerm, currentPage, user]);
+
+	useEffect(() => {
+		if (isAuthenticated && user) {
+			fetchPayments();
+		} else if (status === "authenticated" && !isAuthenticated) {
+			router.push("/login");
+		}
+	}, [
+		searchTerm,
+		currentPage,
+		fetchPayments,
+		isAuthenticated,
+		status,
+		user,
+		router,
+	]);
 
 	const getStatusColor = (status: string) => {
 		switch (status) {
@@ -73,7 +87,7 @@ const PaymentsPage = () => {
 		}
 	};
 
-	if (loading) {
+	if (status === "loading" || loading) {
 		return <LoaderComponent />;
 	}
 

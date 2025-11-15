@@ -14,7 +14,7 @@ import { ChevronLeft } from "lucide-react";
 
 const Signup = () => {
 	return (
-		<div className="dark flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background via-background/95 to-background/90 p-4">
+		<div className="dark flex min-h-screen flex-col items-center justify-center bg-linear-to-br from-background via-background/95 to-background/90 p-4">
 			<Link
 				href="/"
 				className="absolute left-8 top-8 flex items-center justify-center gap-1 group"

@@ -67,7 +67,6 @@ const Pricing = () => {
 		},
 	];
 
-	// Function to get features for each plan based on its properties
 	const getFeaturesForPlan = (plan: Plan) => {
 		const features = [];
 
@@ -98,8 +97,8 @@ const Pricing = () => {
 						Simple, transparent pricing
 					</h2>
 					<p className="text-muted-foreground max-w-2xl mx-auto">
-						Choose the plan that fits your team's needs. All plans include our
-						core AI-powered features.
+						Choose the plan that fits your team&apos;s needs. All plans include
+						our core AI-powered features.
 					</p>
 				</div>
 
