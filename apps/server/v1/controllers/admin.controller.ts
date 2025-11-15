@@ -4,7 +4,6 @@ import { ApiError, asyncHandler } from "../utils/apiErrorHandler";
 
 export const getAdminDashboardStats = asyncHandler(
 	async (req: Request, res: Response) => {
-		console.log("how many times");
 		const [
 			totalUsers,
 			activeRepositories,

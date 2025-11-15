@@ -49,28 +49,6 @@ High-level Summary:
 Do not include explanations about how you generated the summary. Focus only on providing a polished, readable summary that aligns with the requested tone.
 `;
 
-// const walkthroughPrompt = `
-
-// ### Walkthrough
-// - Explain step by step what was changed in the PR and why.
-// - Describe how new functions/classes are used.
-// - Mention any edge cases or unusual details.
-// - Keep it 3–6 sentences.
-
-// ### Changes
-// Create a Markdown table:
-
-// | Cohort / File(s) | Summary |
-// |------------------|---------|
-// | <file or module> | <one-line summary of changes> |
-
-// ### Sequence Diagram(s)
-// - If relevant, generate a Mermaid sequence diagram showing function calls, data flow, or user interactions introduced by this PR.
-
-// ### Estimated Code Review Effort
-// - Low / Medium / High, with a short reason.
-
-// `;
 
 const triageFileDiff = `Below the summary, I would also like you to triage the diff as \`NEEDS_REVIEW\` or
 \`APPROVED\` based on the following criteria:
@@ -97,7 +75,6 @@ Important:
   the summary. You must only use the triage status format above to indicate that.
 `;
 
-//Prompts for bug detection, code suggestion, and improvement
 
 export const codeSuggestionPrompt = `
 You are an expert software engineer and code reviewer. Your task is to analyze the provided code diff and provide actionable, concise suggestions. Focus on clarity, correctness, and spotting subtle bugs or opportunities for improvement.

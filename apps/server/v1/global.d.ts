@@ -1,12 +1,13 @@
 import type { Request } from "express";
+import { ExistingPlan } from "db/prisma";
 interface User {
 	id: string;
 	activeRepos: number;
 	planName: string;
 	plan: {
 		id: string;
-		name: any;
-		price: number | null;
+		name: ExistingPlan;
+		price: number;
 		maxRepos: number;
 		description: string;
 		createdAt: Date;

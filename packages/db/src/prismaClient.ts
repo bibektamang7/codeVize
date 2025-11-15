@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { Tone } from "@prisma/client";
+import { Tone, ExistingPlan } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
 	prismaClient: PrismaClient | undefined;
@@ -11,5 +11,5 @@ if (process.env.NODE_ENV !== "production")
 	globalForPrisma.prismaClient = prismaClient;
 
 // This is for backend environment
-export { Tone };
+export { Tone, ExistingPlan };
 export const prisma = new PrismaClient();
