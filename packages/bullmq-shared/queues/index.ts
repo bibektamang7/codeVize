@@ -2,11 +2,11 @@ import { Queue } from "bullmq";
 import type { JobsOptions } from "bullmq";
 import { Redis } from "ioredis";
 
-const redisConnection = new Redis(process.env.REDIS_URL!, {
-	// username: "default",
-	// password: process.env.REDIS_PASSWORD,
-	// host: process.env.REDIS_HOST,
-	// port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : undefined,
+const redisConnection = new Redis({
+	username: "default",
+	password: process.env.REDIS_PASSWORD,
+	host: process.env.REDIS_HOST,
+	port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : undefined,
 	maxRetriesPerRequest: null,
 	enableReadyCheck: false,
 	reconnectOnError: (err) => {

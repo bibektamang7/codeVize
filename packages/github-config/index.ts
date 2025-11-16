@@ -1,6 +1,5 @@
 import { createNodeMiddleware } from "@octokit/webhooks";
 import { App, Octokit } from "octokit";
-import fs from "fs";
 import { prisma } from "db/prisma";
 import type { Endpoints } from "@octokit/types";
 import { logger } from "logger";
@@ -11,10 +10,9 @@ import {
 } from "bullmq-shared";
 
 const GITHUB_APP_ID = process.env.GITHUB_APP_ID;
-const GITHUB_APP_PRIVATE_KEY_PATH = process.env.GITHUB_PRIVATE_KEY;
 const GITHUB_APP_WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET;
 
-const privateKey = fs.readFileSync(GITHUB_APP_PRIVATE_KEY_PATH!, "utf-8");
+const privateKey = process.env.GITHUB_PRIVATE_KEY!;
 
 const githubApp = new App({
 	appId: GITHUB_APP_ID!,
