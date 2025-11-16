@@ -6,7 +6,6 @@
 	"scripts": {
 		"dev": "bun ./index.ts",
 		"start": "bun ./index.ts",
-		"build": "bun ./index.ts",
 		"test": "jest --passWithNoTests",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage"
