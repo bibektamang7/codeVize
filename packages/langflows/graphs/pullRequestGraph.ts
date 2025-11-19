@@ -8,6 +8,7 @@ import { checkBugsOrImprovement } from "../utils/pullRequest/suggestion";
 import { getCodeSummarizationModel } from "../utils/codeSummarizationLLMFactory";
 import { getAuthenticatedOctokit } from "github-config";
 import { highLevelPRSummaryPrompt } from "../prompts/reviewPrompt";
+import { simulateNodeExecution } from "../utils/mock";
 
 type RepoConfigFiles = Record<string, string>;
 
@@ -31,15 +32,17 @@ export const PullRequestGraphState = Annotation.Root({
 });
 
 const validationNode = async (state: typeof PullRequestGraphState.State) => {
-	console.log(
-		`Validating PR #${state.prNumber} for ${state.owner}/${state.repoName}`
-	);
 	const repo = await prisma.repo.findUnique({
 		where: {
 			repoId: state.repoId,
 			isActive: true,
 		},
 		include: {
+			user: {
+				select: {
+					id: true,
+				},
+			},
 			repoConfig: {
 				include: {
 					reviewConfig: true,
@@ -53,16 +56,7 @@ const validationNode = async (state: typeof PullRequestGraphState.State) => {
 		console.error(
 			`Repo ${state.owner}/${state.repoName} not found in database`
 		);
-		return {
-			error: `Repo ${state.owner}/${state.repoName} not found in database`,
-		};
-	}
-
-	if (!repo.isActive) {
-		console.log(
-			`Repo ${state.owner}/${state.repoName} is not active, skipping review`
-		);
-		return { validationStatus: "repo_inactive" };
+		return new Send("__end__", {});
 	}
 
 	const repoConfiguration = repo.repoConfig;
@@ -201,7 +195,6 @@ const handleErrorOccuredNode = async (
 			type: "Pull Request",
 			message: "Something went wrong to summarize or review PR",
 		};
-		console.log("this is state", state);
 		if (!state.repo.repoConfig) {
 			throw new Error(`${state.repoName}'s repoConfig is not set`);
 		}
@@ -219,16 +212,40 @@ const handleErrorOccuredNode = async (
 	}
 };
 
+const isTestMode = process.env.TEST_MODE === "simulate" || false;
+
+const wrapNode = (nodeName: string, realNode: Function, time: number) => {
+	return async (state: typeof PullRequestGraphState.State) => {
+		if (isTestMode) {
+			return simulateNodeExecution(nodeName, state, time);
+		}
+		return realNode(state);
+	};
+};
+
 export const pullRequestWorkflow = new StateGraph(PullRequestGraphState)
 	.addNode("validation", validationNode)
-	.addNode("highLevelSummary", highLevelSummaryNode)
-	.addNode("tabularPRFilesSummarize", tabularPRDiffSummary)
-	.addNode("retrievePRFiles", retrievePRFiles)
-	.addNode("checkBugsOrImprovement", checkBugsOrImprovement)
+	.addNode(
+		"highLevelSummary",
+		wrapNode("highLevelSummary", highLevelSummaryNode, 1350)
+	)
+	.addNode(
+		"tabularPRFilesSummarize",
+		wrapNode("tabularPRFilesSummarize", tabularPRDiffSummary, 1150)
+	)
+	.addNode(
+		"retrievePRFiles",
+		wrapNode("retrievePRFiles", retrievePRFiles, 1000)
+	)
+	.addNode(
+		"checkBugsOrImprovement",
+		wrapNode("checkBugsOrImprovement", checkBugsOrImprovement, 1200)
+	)
 	.addNode("errorOccured", handleErrorOccuredNode)
 	.addConditionalEdges(
 		"retrievePRFiles",
 		(state: typeof PullRequestGraphState.State) => {
+			console.log("this is tate", state);
 			if (
 				state.repo.repoConfig &&
 				!state.repo.repoConfig.reviewConfig.highLevelSummaryEnabled
@@ -253,15 +270,10 @@ export const pullRequestWorkflow = new StateGraph(PullRequestGraphState)
 	.addConditionalEdges(
 		"tabularPRFilesSummarize",
 		(state: typeof PullRequestGraphState.State) => {
-			console.log(
-				"this is after tabularpr file summary",
-				state.repo.repoConfig?.reviewConfig
-			);
 			if (
 				state.repo.repoConfig &&
 				!state.repo.repoConfig.reviewConfig.aiReviewEnabled
 			) {
-				console.log("then its here");
 				return "__end__";
 			}
 			return "checkBugsOrImprovement";

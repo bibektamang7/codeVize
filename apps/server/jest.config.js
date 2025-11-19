@@ -1,7 +1,9 @@
-module.exports = {
+const config = {
 	preset: "ts-jest",
 	testEnvironment: "node",
 	transform: {
-		"^.+\.tsx?$": "ts-jest",
+		"^.+\\.tsx?$": "ts-jest",
 	},
 };
+
+export default config;

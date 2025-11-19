@@ -4,8 +4,9 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "bun ./index.ts",
-		"start": "bun ./index.ts",
+		"dev": "bun ./src/index.ts",
+		"start": "bun ./src/index.ts",
+		"build": "bun build ./src/index.ts --outdir ./dist --target=bun",
 		"test": "jest --passWithNoTests",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage"

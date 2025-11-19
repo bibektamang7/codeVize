@@ -1,6 +1,6 @@
 import type { Request } from "express";
 import { ExistingPlan } from "db/prisma";
-interface User {
+export interface User {
 	id: string;
 	activeRepos: number;
 	planName: string;

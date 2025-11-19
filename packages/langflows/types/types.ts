@@ -1,6 +1,9 @@
 import { Tone } from "db/prisma";
 
 export interface Repo {
+	user: {
+		id: string;
+	};
 	id: string;
 	isActive: boolean;
 	repoConfig?: {

@@ -1,41 +1,40 @@
 import { Queue } from "bullmq";
-import type { JobsOptions } from "bullmq";
-import { Redis } from "ioredis";
+import type { QueueOptions, JobsOptions } from "bullmq";
+import Redis from "ioredis";
 
-const redisConnection = new Redis({
-	username: "default",
-	password: process.env.REDIS_PASSWORD,
-	host: process.env.REDIS_HOST,
-	port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : undefined,
+const redisConnection = new Redis(process.env.REDIS_URL!, {
+	// username: "default",
+	// password: process.env.REDIS_PASSWORD,
+	// host: process.env.REDIS_HOST,
+	// port: Number(process.env.REDIS_PORT) || 6379,
 	maxRetriesPerRequest: null,
-	enableReadyCheck: false,
+	enableReadyCheck: true,
 	reconnectOnError: (err) => {
-		const targetErrors = ["READONLY", "ETIMEOUT", "ECONNRESET"];
+		const targetErrors = ["READONLY", "ETIMEOUT", "ECONNRESET", "ECONNREFUSED"];
 		if (targetErrors.some((e) => err.message.includes(e))) {
-			console.error("Redis reconnecting after error: ", err.message);
+			console.warn("Redis reconnecting after error:", err.message);
 			return true;
 		}
 		return false;
 	},
 	retryStrategy(times) {
-		const delay = Math.min(times * 500, 5000);
+		const delay = Math.min(50 * Math.pow(2, times), 5000);
 		console.warn(`Redis retrying connection in ${delay} ms...`);
 		return delay;
 	},
 });
 
-const githubQueue = new Queue("github-job", {
-	connection: redisConnection as any,
+const queueOptions: QueueOptions = {
+	connection: redisConnection,
 	defaultJobOptions: {
 		attempts: 3,
-		backoff: {
-			type: "exponential",
-			delay: 5000,
-		},
+		backoff: { type: "exponential", delay: 5000 },
 		removeOnComplete: true,
-		removeOnFail: false,
+		removeOnFail: true,
 	},
-});
+};
+
+export const githubQueue = new Queue("github-job", queueOptions);
 
 interface DeleteEmbeddingData {
 	installationId: number;

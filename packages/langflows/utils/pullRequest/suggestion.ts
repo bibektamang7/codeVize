@@ -5,6 +5,7 @@ import { getCodeSuggestionModel } from "../codeSuggestionLLMFactory";
 import { suggestionSystemPrompt } from "../../prompts/reviewPrompt";
 import { Send } from "@langchain/langgraph";
 import { tryInvoke } from "../utils";
+import { prisma } from "db/prisma";
 
 const MAX_QUERY_LEN = 4000;
 const BATCH_SIZE = 10;
@@ -12,7 +13,6 @@ const BATCH_SIZE = 10;
 export const checkBugsOrImprovement = async (
 	State: typeof PullRequestGraphState.State
 ) => {
-	console.log("after that");
 	const comments: any[] = [];
 	const filterSelectedFiles = State.unReviewedFiles;
 	if (!filterSelectedFiles?.length) {
@@ -94,14 +94,6 @@ Format your comment exactly as follows:
 			} catch (error: any) {
 				failedHunks.push(hunk);
 				console.error("Failed to get suggestion:", error);
-
-				return new Send("errorOccured", {
-					...State,
-					error: {
-						message: error.message || "Failed to get suggestion",
-						type: "review",
-					},
-				});
 			}
 		}
 	}
@@ -109,7 +101,8 @@ Format your comment exactly as follows:
 	if (comments.length > 0) {
 		console.log(`Posting ${comments.length} review comments to GitHub...`);
 		const octokit = await getAuthenticatedOctokit(State.installationId);
-
+		let successCount = 0;
+		let isCommentFailed = false;
 		for (let i = 0; i < comments.length; i += BATCH_SIZE) {
 			const batch = comments.slice(i, i + BATCH_SIZE);
 			try {
@@ -121,22 +114,52 @@ Format your comment exactly as follows:
 					event: "COMMENT",
 					comments: batch,
 				});
+				successCount++;
 			} catch (error: any) {
+				isCommentFailed = true;
 				console.error("Failed to submit a batch of comments:", error);
-
-				return new Send("errorOccured", {
-					...State,
-					error: {
-						message: error.message || "GitHub review submission failed",
-						type: "review",
-					},
-				});
 			}
+		}
+		if (successCount > 0) {
+			await prisma.user
+				.update({
+					where: {
+						id: State.repo.user.id,
+					},
+					data: {
+						reviewCount: {
+							increment: successCount,
+						},
+					},
+				})
+				.catch(() => {
+					console.log(
+						"Failed to update review count: user's ID -> ",
+						State.repo.user.id
+					);
+				});
+		}
+		if (isCommentFailed) {
+			return new Send("errorOccured", {
+				...State,
+				error: {
+					message: "GitHub review submission failed",
+					type: "review",
+				},
+			});
 		}
 	}
 
 	if (failedHunks.length > 0) {
 		console.warn(`${failedHunks.length} hunks failed to review.`);
+
+		return new Send("errorOccured", {
+			...State,
+			error: {
+				message: "Failed to get suggestion",
+				type: "review",
+			},
+		});
 	}
 
 	return { ...State };

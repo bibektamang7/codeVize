@@ -43,7 +43,6 @@ const createRepos = async (octokit: any, payload: any) => {
 			logger.warn("User not found", { githubAccountId });
 			return;
 		}
-		logger.info("User found", user.email);
 
 		const reposResponse =
 			await octokit.rest.apps.listReposAccessibleToInstallation();
@@ -54,13 +53,12 @@ const createRepos = async (octokit: any, payload: any) => {
 			return;
 		}
 
-		console.log("number of repo to create", repositories.length);
-
 		const getConfigFromPlan = (plan: typeof user.plan) => ({
 			generalConfig: {
 				enableFreeTier: plan.name !== "FREE",
 				earlyAccess: plan.pathConfigCustomization,
-				defaultModel: plan.name === "ENTERPRISE" ? "gpt-4" : "gpt-4",
+				defaultModel:
+					plan.name === "ENTERPRISE" ? "gpt-4" : "openai/gpt-oss-120b",
 				contextDepth: plan.maxMonthlyReview,
 			},
 			reviewConfig: {
@@ -186,12 +184,10 @@ githubApp.webhooks.on(
 );
 
 githubApp.webhooks.on("installation.created", async ({ octokit, payload }) => {
-	console.log("this is in installation");
 	await createRepos(octokit, payload);
 });
 
 githubApp.webhooks.on("installation.deleted", async ({ octokit, payload }) => {
-	console.log("in uninstallation here");
 	const installationId = payload.installation.id.toString();
 
 	try {
@@ -222,8 +218,6 @@ githubApp.webhooks.on("installation.deleted", async ({ octokit, payload }) => {
 				where: { installationId },
 			});
 		}
-
-		console.log("Repo(s) deleted successfully.");
 	} catch (error) {
 		console.error("Error deleting installation:", error);
 	}
@@ -234,16 +228,25 @@ githubApp.webhooks.on("installation.deleted", async ({ octokit, payload }) => {
 // 	console.log("Pull request changes");
 // });
 
+const isTestMode = process.env.TEST_MODE === "simulate" || false;
+const getInstallationId = (owner: string, repoName: string) => {
+	if (isTestMode) {
+		return 12345;
+	}
+	return getAuthenticatedInstallationId(owner, repoName);
+};
+
 githubApp.webhooks.on("pull_request.opened", async ({ payload }) => {
 	try {
 		const { owner } = payload.repository;
 
-		let installationId: number | undefined = undefined;
+		let installationId: number | undefined =
+			process.env.TEST_MODE === "simulate" ? 12345 : undefined;
 
 		if ("installation" in payload && payload.installation) {
 			installationId = payload.installation.id;
 		} else {
-			installationId = await getAuthenticatedInstallationId(
+			installationId = await getInstallationId(
 				owner.login,
 				payload.repository.name
 			);

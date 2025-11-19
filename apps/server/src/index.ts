@@ -5,6 +5,7 @@ import { githubApp, createNodeMiddleware } from "github-config";
 import compression from "compression";
 
 const app = express();
+
 const middleware = createNodeMiddleware(githubApp.webhooks, {
 	path: "/api/v1/githubs/webhook",
 });
