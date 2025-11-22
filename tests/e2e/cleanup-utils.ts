@@ -1,7 +1,5 @@
-import { test, expect } from '@playwright/test';
+// No Playwright imports in utility file - this file should only contain helper functions
 
-// This utility would typically call your backend admin API to clean up test users
-// Since this is a template, the actual implementation depends on your backend API
 export async function cleanupTestUser(userId: string) {
   try {
     // Example of how you might call your admin API to delete a test user
@@ -65,23 +63,20 @@ export async function globalTestCleanup() {
   console.log('Performing global test cleanup...');
 }
 
-// Example of how to use cleanup in a test
-test.describe('Test Cleanup Example', () => {
-  test('example test with cleanup', async ({ page }) => {
-    // Test implementation here
-    await page.goto('http://localhost:3000');
-    
-    // Mock test data that would need cleanup
-    const testUserId = 'test-user-123';
-    const testRepoId = 'test-repo-123';
-    
-    console.log('Test completed, data marked for cleanup');
-    
-    // In an afterEach hook, you would actually call the cleanup functions
-    test.afterEach(async () => {
-      await cleanupTestUser(testUserId);
-      await cleanupTestRepository(testRepoId);
-      await globalTestCleanup();
-    });
-  });
+// Note: Actual cleanup should be handled in test afterEach hooks as needed
+// Example usage in a test file:
+/*
+test.afterEach(async ({ page }, testInfo) => {
+  console.log(`Test "${testInfo.title}" completed. Status: ${testInfo.status}`);
+
+  if (testInfo.status === "passed") {
+    console.log("Test passed, cleaning up test data...");
+    await cleanupTestUser(testUserId);
+    await cleanupTestRepository(testRepoId);
+  } else {
+    console.log(`Test failed, status: ${testInfo.status}`);
+  }
+
+  await globalTestCleanup();
 });
+*/
