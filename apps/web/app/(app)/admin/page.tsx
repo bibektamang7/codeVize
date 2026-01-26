@@ -26,12 +26,11 @@ const DashboardPage = () => {
 			setLoading(true);
 			setError(null);
 			const response = await adminApiService.getDashboardStats(user.token);
-			console.log(response, "this i in dadmin");
 			setActivity(response.activity);
 			setStats(response.stats);
 		} catch (err: any) {
 			setError(
-				err.response?.data?.message || "Failed to fetch dashboard statistics"
+				err.response?.data?.message || "Failed to fetch dashboard statistics",
 			);
 		} finally {
 			setLoading(false);
@@ -200,7 +199,7 @@ const DashboardPage = () => {
 										{activity.newRepositoryAdded.user.username} added{" "}
 										{activity.newRepositoryAdded.repoName}{" "}
 										{formatRelativeTime(
-											activity.newRepositoryAdded.createdAt
+											activity.newRepositoryAdded.createdAt,
 										)}{" "}
 									</p>
 								</div>

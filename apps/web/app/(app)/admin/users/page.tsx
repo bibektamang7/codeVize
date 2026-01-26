@@ -7,6 +7,7 @@ import LoaderComponent from "@/components/Loader";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuthUser } from "@/hooks/useAuthUser";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface User {
 	id: string;
@@ -31,6 +32,9 @@ const UsersPage = () => {
 	const router = useRouter();
 	const { isAuthenticated, status, user } = useAuthUser();
 
+	// Debounce the search term to prevent too many API calls
+	const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
 	const fetchUsers = useCallback(async () => {
 		if (!user) {
 			setLoading(false);
@@ -39,7 +43,7 @@ const UsersPage = () => {
 		try {
 			setLoading(true);
 			const response = await adminApiService.getAllUsers(user.token, {
-				search: searchTerm,
+				search: debouncedSearchTerm,
 				page: currentPage,
 				limit: 10,
 			});
@@ -50,7 +54,7 @@ const UsersPage = () => {
 		} finally {
 			setLoading(false);
 		}
-	}, [user, searchTerm, currentPage]);
+	}, [user, debouncedSearchTerm, currentPage]);
 
 	const handleDeleteUser = async (userId: string) => {
 		if (confirm("Are you sure you want to delete this user?") && user) {
@@ -73,7 +77,7 @@ const UsersPage = () => {
 			router.push("/login");
 		}
 	}, [
-		searchTerm,
+		debouncedSearchTerm,
 		currentPage,
 		fetchUsers,
 		user,
@@ -119,7 +123,7 @@ const UsersPage = () => {
 					<input
 						type="text"
 						placeholder="Search users..."
-						className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64"
+						className="pl-10 pr-4 py-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64"
 						value={searchTerm}
 						onChange={(e) => {
 							setSearchTerm(e.target.value);
@@ -179,7 +183,7 @@ const UsersPage = () => {
 												<Image
 													className="h-10 w-10 rounded-full"
 													src={user.image}
-													alt=""
+													alt="user avatar image"
 													width={10}
 													height={10}
 													loading="lazy"
@@ -248,7 +252,7 @@ const UsersPage = () => {
 						<span className="font-medium">
 							{Math.min(
 								(pagination.page - 1) * pagination.limit + 1,
-								pagination.total
+								pagination.total,
 							)}
 						</span>{" "}
 						to{" "}

@@ -72,13 +72,14 @@ const nextAuth = NextAuth({
 						postJson(`${backendURL}/users/login`, {
 							githubId: githubProfile.id,
 							email: githubProfile.email,
-						})
-					)
+						}),
+					),
 				);
 				const loginData = await loginResponse.json();
 				user.id = loginData.user.id;
 				user.token = loginData.token;
 				user.plan = loginData.user.planName;
+				user.role = loginData.user.role;
 			} catch (error: any) {
 				console.error(`Login failed for user: ${githubProfile.email}`, error);
 				if (
@@ -93,13 +94,14 @@ const nextAuth = NextAuth({
 									email: githubProfile.email,
 									username: githubProfile.login,
 									image: githubProfile.avatar_url,
-								})
-							)
+								}),
+							),
 						);
 						const signUpData = await signUpResponse.json();
 						user.id = signUpData.user.id;
 						user.token = signUpData.token;
 						user.plan = signUpData.user.planName;
+						user.role = signUpData.user.role;
 					} catch (registerError: any) {
 						console.log("Failed to signup user Email: ", githubProfile.email);
 						return false;
@@ -113,8 +115,6 @@ const nextAuth = NextAuth({
 
 		async jwt({ token, account, user, profile, trigger, session }) {
 			if (trigger === "update" && session.user) {
-				console.log("this is called after plan is updated");
-				console.log("this is token and session", token);
 				return { ...token, ...session };
 			}
 			if (account && profile) {
@@ -129,6 +129,9 @@ const nextAuth = NextAuth({
 				if (user.plan) {
 					token.plan = user.plan;
 				}
+				if (user.role) {
+					token.role = user.role;
+				}
 			}
 			return token;
 		},
@@ -140,6 +143,11 @@ const nextAuth = NextAuth({
 				session.user.name = token.name as string;
 				session.user.image = token.picture as string;
 				session.user.token = token.accessToken as string;
+
+				// Add role to session from token
+				if (token.role) {
+					session.user.role = token.role as string;
+				}
 			}
 			if (token.accessToken) {
 				(session as any).accessToken = token.accessToken as string;

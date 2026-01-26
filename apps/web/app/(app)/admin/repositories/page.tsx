@@ -8,6 +8,7 @@ import { Pagination } from "../payments/page";
 import LoaderComponent from "@/components/Loader";
 import { useRouter } from "next/navigation";
 import { useAuthUser } from "@/hooks/useAuthUser";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const RepositoriesPage = () => {
 	const [repositories, setRepositories] = useState<Repository[]>([]);
@@ -21,6 +22,9 @@ const RepositoriesPage = () => {
 	const router = useRouter();
 	const { isAuthenticated, status, user } = useAuthUser();
 
+	// Debounce the search term to prevent too many API calls
+	const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
 	const fetchRepositories = useCallback(async () => {
 		if (!user) {
 			setLoading(false);
@@ -29,7 +33,7 @@ const RepositoriesPage = () => {
 		try {
 			setLoading(true);
 			const response = await adminApiService.getAllRepositories(user.token, {
-				search: searchTerm,
+				search: debouncedSearchTerm,
 				page: currentPage,
 				limit: 10,
 			});
@@ -40,7 +44,7 @@ const RepositoriesPage = () => {
 		} finally {
 			setLoading(false);
 		}
-	}, [user, searchTerm, currentPage]);
+	}, [user, debouncedSearchTerm, currentPage]);
 
 	const handleDeleteRepository = async (repoId: string) => {
 		if (confirm("Are you sure you want to delete this repository?") && user) {
@@ -65,7 +69,7 @@ const RepositoriesPage = () => {
 	}, [
 		router,
 		isAuthenticated,
-		searchTerm,
+		debouncedSearchTerm,
 		currentPage,
 		fetchRepositories,
 		user,

@@ -7,7 +7,6 @@ export async function GET(req: NextRequest) {
 	if (!pidx) {
 		return NextResponse.json({ error: "Missing pidx" }, { status: 400 });
 	}
-
 	const response = await fetch(
 		`${process.env.BACKEND_URL}/payments/payment/callback`,
 		{
@@ -23,7 +22,9 @@ export async function GET(req: NextRequest) {
 			"http://localhost:3000/dashboard/subscription/payment?error=payment_failed"
 		);
 	}
+
 	const data = await response.json();
+
 	return NextResponse.redirect(
 		`http://localhost:3000/dashboard/subscription/payment?success=true&plan=${data.plan}`
 	);

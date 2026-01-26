@@ -6,6 +6,7 @@ import adminApiService from "@/lib/adminApiService";
 import LoaderComponent from "@/components/Loader";
 import { useRouter } from "next/navigation";
 import { useAuthUser } from "@/hooks/useAuthUser";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface Payment {
 	id: string;
@@ -37,6 +38,9 @@ const PaymentsPage = () => {
 	const [pagination, setPagination] = useState<Pagination | null>(null);
 	const [currentPage, setCurrentPage] = useState(1);
 
+	// Debounce the search term to prevent too many API calls
+	const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
 	const fetchPayments = useCallback(async () => {
 		if (!user) {
 			setLoading(false);
@@ -45,7 +49,7 @@ const PaymentsPage = () => {
 		try {
 			setLoading(true);
 			const response = await adminApiService.getAllPayments(user.token, {
-				search: searchTerm,
+				search: debouncedSearchTerm,
 				page: currentPage,
 				limit: 10,
 			});
@@ -56,7 +60,7 @@ const PaymentsPage = () => {
 		} finally {
 			setLoading(false);
 		}
-	}, [searchTerm, currentPage, user]);
+	}, [debouncedSearchTerm, currentPage, user]);
 
 	useEffect(() => {
 		if (isAuthenticated && user) {
@@ -65,7 +69,7 @@ const PaymentsPage = () => {
 			router.push("/login");
 		}
 	}, [
-		searchTerm,
+		debouncedSearchTerm,
 		currentPage,
 		fetchPayments,
 		isAuthenticated,
