@@ -39,14 +39,17 @@ const AdminSidebar = () => {
 			<SidebarContent>
 				<SidebarGroup>
 					<SidebarGroupContent>
-						<SidebarMenu>
+						<SidebarMenu className="gap-3">
 							{menuItems.map((item) => (
 								<SidebarMenuItem key={item.title}>
 									<SidebarMenuButton
 										asChild
 										isActive={pathname === item.url}
 									>
-										<Link href={item.url}>
+										<Link
+											href={item.url}
+											className="text-[1.2rem]"
+										>
 											<item.Icon />
 											<span>{item.title}</span>
 										</Link>

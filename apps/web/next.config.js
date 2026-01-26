@@ -13,6 +13,13 @@ const nextConfig = {
 	experimental: {
 		optimizePackageImports: ["lucide-react"],
 	},
+	images: {
+		remotePatterns: [
+			{
+				hostname: "avatars.githubusercontent.com",
+			},
+		],
+	},
 };
 
 export default withBundleAnalyzer(nextConfig);

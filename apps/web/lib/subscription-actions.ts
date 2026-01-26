@@ -10,8 +10,9 @@ export async function subscribeToPlan(planName: string) {
 	if (!session?.user?.id) {
 		throw new Error("User not authenticated");
 	}
+	let response;
 	try {
-		const response = await axios.post(
+		response = await axios.post(
 			`${process.env.BACKEND_URL}/payments/`,
 			{
 				planName,
@@ -22,15 +23,11 @@ export async function subscribeToPlan(planName: string) {
 				},
 			}
 		);
-		console.log("this is reposne", response.data);
-		const { payment_url, redirect_url } = response.data;
-		console.log("this is payment url", payment_url, redirect_url);
-		redirect(payment_url || redirect_url);
 	} catch (error) {
 		console.error("Failed to subscribe to plan:", error);
-		if ((error as any).digest?.startsWith("NEXT_REDIRECT")) {
-			throw error;
-		}
 		throw new Error("Failed to subscribe to plan");
 	}
+	const { payment_url, redirect_url } = response.data;
+	const redirectURL = payment_url || redirect_url;
+	redirect(redirectURL);
 }

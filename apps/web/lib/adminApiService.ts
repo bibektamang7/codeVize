@@ -10,12 +10,13 @@ const buildUrl = (path: string, params?: Record<string, any>): string => {
 			}
 		});
 	}
+	console.log("this is url: ", url.toString());
 	return url.toString();
 };
 
 const apiFetch = async <T = any>(
 	url: string,
-	options: RequestInit = {}
+	options: RequestInit = {},
 ): Promise<T> => {
 	const config: RequestInit = {
 		...options,
@@ -46,9 +47,9 @@ const adminApiService = {
 
 	getAllUsers: (
 		token: string,
-		params?: { page?: number; limit?: number; search?: string }
+		params?: { page?: number; limit?: number; search?: string },
 	) =>
-		apiFetch(buildUrl("/admin/users", params), {
+		apiFetch(buildUrl(`${API_BASE_URL}/admin/users`, params), {
 			headers: { Authorization: `Bearer ${token}` },
 		}),
 
@@ -60,9 +61,9 @@ const adminApiService = {
 
 	getAllRepositories: (
 		token: string,
-		params?: { page?: number; limit?: number; search?: string }
+		params?: { page?: number; limit?: number; search?: string },
 	) =>
-		apiFetch(buildUrl("/admin/repositories", params), {
+		apiFetch(buildUrl(`${API_BASE_URL}/admin/repositories`, params), {
 			headers: { Authorization: `Bearer ${token}` },
 		}),
 
@@ -81,9 +82,14 @@ const adminApiService = {
 
 	getAllPayments: (
 		token: string,
-		params?: { page?: number; limit?: number; search?: string; status?: string }
+		params?: {
+			page?: number;
+			limit?: number;
+			search?: string;
+			status?: string;
+		},
 	) =>
-		apiFetch(buildUrl("/admin/payments", params), {
+		apiFetch(buildUrl(`${API_BASE_URL}/admin/payments`, params), {
 			headers: { Authorization: `Bearer ${token}` },
 		}),
 };

@@ -57,7 +57,7 @@ const DashboardSidebar = () => {
 			<SidebarContent>
 				<SidebarGroup>
 					<SidebarGroupContent>
-						<SidebarMenu>
+						<SidebarMenu className="gap-4">
 							{sidebarMenu.map((element) => (
 								<SidebarMenuItem key={element.item}>
 									<SidebarMenuButton asChild>
@@ -66,7 +66,7 @@ const DashboardSidebar = () => {
 											className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors duration-200 hover:bg-sidebar-accent"
 										>
 											<element.icon className="size-5" />
-											<span className="text-sm font-medium tracking-wide">
+											<span className="text-[1.1rem] font-medium tracking-wide">
 												{element.item}
 											</span>
 										</Link>

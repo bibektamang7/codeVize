@@ -166,15 +166,12 @@ const RepositoryLists = () => {
 				role="region"
 				aria-labelledby="repositories-heading"
 			>
-				<h2
-					id="repositories-heading"
-					className="sr-only"
-				>
-					Repositories List
-				</h2>
 				<CardContent className="p-0">
 					{filteredRepos.length > 0 ? (
-						<div className="divide-y divide-border">
+						<div
+							className="divide-y divide-border"
+							aria-labelledby="repository-lists"
+						>
 							{filteredRepos.map((repo) => (
 								<div
 									key={repo.id}
@@ -245,6 +242,7 @@ const RepositoryLists = () => {
 						<div
 							role="alert"
 							className="py-16 text-center flex flex-col items-center justify-center gap-4"
+							aria-labelledby="no-repositories"
 						>
 							<div className="flex flex-col items-center justify-center gap-3 p-6 max-w-md mx-auto">
 								<ShieldX

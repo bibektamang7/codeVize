@@ -11,8 +11,16 @@ export default async function middleware(req: NextRequest) {
 	if (isPublicPath && session) {
 		return NextResponse.redirect(new URL("/dashboard", req.url));
 	}
-	if (!isPublicPath && !isRootPath && !session) {
+
+	const isDashboardRoute = path.startsWith("/dashboard");
+	const isAdminRoute = path.startsWith("/admin");
+
+	if ((isDashboardRoute || isAdminRoute) && !session) {
 		return NextResponse.redirect(new URL("/login", req.url));
+	}
+
+	if (isAdminRoute && session && session.user?.role !== "ADMIN") {
+		return NextResponse.redirect(new URL("/dashboard", req.url));
 	}
 
 	if (isRootPath) {
