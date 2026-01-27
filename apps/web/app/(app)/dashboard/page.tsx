@@ -1,13 +1,9 @@
 "use client";
-import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import LoaderComponent from "@/components/Loader";
-const RepositoryLists = dynamic(() => import("@/components/RepositoryLists"), {
-	loading: () => <LoaderComponent />,
-	ssr: false,
-});
+import RepositoryLists from "@/components/RepositoryLists";
 
 const DashboardPage = () => {
 	const handleConnectGithubApp = () => {
@@ -17,7 +13,7 @@ const DashboardPage = () => {
 
 	return (
 		<main className="container mx-auto px-4 py-6 max-w-6xl">
-			<header className="mb-6">
+			<section className="mb-6">
 				<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 					<div>
 						<h1 className="text-2xl md:text-3xl font-bold">
@@ -35,7 +31,7 @@ const DashboardPage = () => {
 						<Plus className="mr-2 h-4 w-4" /> Add Repository
 					</Button>
 				</div>
-			</header>
+			</section>
 
 			<Suspense
 				fallback={

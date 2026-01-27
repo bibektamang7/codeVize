@@ -63,13 +63,16 @@ const AdminSidebar = () => {
 			<SidebarFooter>
 				<SidebarMenu>
 					<SidebarMenuItem>
-						<SidebarMenuButton
-							onClick={() => {
-								console.log("Logout clicked");
-							}}
-						>
-							<LogOut />
-							<span>Logout</span>
+						<SidebarMenuButton>
+							<Link
+								href={"/dashboard"}
+								className="flex justify-center items-center gap-2"
+							>
+								<LogOut />
+								<p className="text-lg tracking-tight hover:cursor-pointer">
+									Go to dashboard
+								</p>
+							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 				</SidebarMenu>

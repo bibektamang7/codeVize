@@ -6,47 +6,48 @@ import { useEffect, ReactNode } from "react";
 import LoaderComponent from "@/components/Loader";
 
 interface ProtectedRouteWrapperProps {
-  children: ReactNode;
-  requireAdmin?: boolean;
+	children: ReactNode;
+	requireAdmin?: boolean;
 }
 
-const ProtectedRouteWrapper = ({ children, requireAdmin = false }: ProtectedRouteWrapperProps) => {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+const ProtectedRouteWrapper = ({
+	children,
+	requireAdmin = false,
+}: ProtectedRouteWrapperProps) => {
+	const { data: session, status } = useSession();
+	const router = useRouter();
 
-  useEffect(() => {
-    if (status === "loading") return; // Still loading, don't redirect yet
+	useEffect(() => {
+		if (status === "loading") return;
 
-    if (!session) {
-      // Session expired or not authenticated
-      router.push("/login");
-      return;
-    }
+		if (!session) {
+			router.push("/login");
+			return;
+		}
 
-    if (requireAdmin && session.user?.role !== "ADMIN") {
-      // User is not admin but admin access is required
-      router.push("/dashboard");
-      return;
-    }
-  }, [session, status, router, requireAdmin]);
+		if (requireAdmin && session.user?.role !== "ADMIN") {
+			router.push("/dashboard");
+			return;
+		}
+	}, [session, status, router, requireAdmin]);
 
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <LoaderComponent />
-      </div>
-    );
-  }
+	if (status === "loading") {
+		return (
+			<div className="flex items-center justify-center h-screen">
+				<LoaderComponent />
+			</div>
+		);
+	}
 
-  if (!session) {
-    return null; // Will redirect via useEffect
-  }
+	if (!session) {
+		return null;
+	}
 
-  if (requireAdmin && session.user?.role !== "ADMIN") {
-    return null; // Will redirect via useEffect
-  }
+	if (requireAdmin && session.user?.role !== "ADMIN") {
+		return null;
+	}
 
-  return <>{children}</>;
+	return <>{children}</>;
 };
 
 export default ProtectedRouteWrapper;

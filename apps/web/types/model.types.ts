@@ -65,7 +65,7 @@ export interface RepositoryProps {
 			highLevelSummaryEnabled: boolean;
 			showWalkThrough: boolean;
 		};
-		errorLogs?: RepoErrorLogProps[];
+		errorLogs: RepoErrorLogProps[];
 	};
 }
 
@@ -74,7 +74,7 @@ export interface RepoErrorLogProps {
 	message: string;
 	type: string;
 	number?: number;
-	occurredAt: Date;
+	occurredAt: string;
 	resolved: boolean;
 }
 

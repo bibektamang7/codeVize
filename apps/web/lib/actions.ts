@@ -29,16 +29,15 @@ export async function getReposWithErrorLogs() {
 				headers: {
 					Authorization: `Bearer ${session.user.token}`,
 				},
-			}
+			},
 		);
 		const { repos } = response.data;
-		console.log("this ir repos", repos)
 
 		return repos;
 	} catch (error) {
 		console.log(error, "this is in error logs");
 		toast.error(
-			"Failed to fetch repositories with error logs, please try again."
+			"Failed to fetch repositories with error logs, please try again.",
 		);
 	}
 }

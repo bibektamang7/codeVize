@@ -1,3 +1,5 @@
+"use client";
+
 import { useLoading } from "@/hooks/useLoading";
 import { repositoryAPI } from "@/lib/api";
 import { RepositoryProps } from "@/types/model.types";
@@ -44,7 +46,7 @@ const RepositoryLists = () => {
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [dialogType, setDialogType] = useState<"activate" | null>(null);
 	const [selectedRepo, setSelectedRepo] = useState<RepositoryProps | null>(
-		null
+		null,
 	);
 
 	const { isAuthenticated, status, user } = useAuthUser();
@@ -65,7 +67,7 @@ const RepositoryLists = () => {
 					next: {
 						revalidate: 60 * 3,
 					},
-				}
+				},
 			);
 			const result = await response.json();
 			setRepos(result.repositories || []);
@@ -83,7 +85,7 @@ const RepositoryLists = () => {
 				? repositoryAPI.deactivateRepository(repoId, user?.token)
 				: repositoryAPI.activateRepository(repoId, user?.token),
 		"Repository status updated successfully!",
-		"Failed to update repository status"
+		"Failed to update repository status",
 	);
 
 	useEffect(() => {
@@ -105,8 +107,8 @@ const RepositoryLists = () => {
 			prev.map((prevRepo) =>
 				prevRepo.id === repo.id
 					? { ...prevRepo, isActive: !repo.isActive }
-					: prevRepo
-			)
+					: prevRepo,
+			),
 		);
 		setDialogOpen(false);
 		setSelectedRepo(null);
@@ -124,7 +126,7 @@ const RepositoryLists = () => {
 	};
 
 	const filteredRepos = repos.filter((r) =>
-		r.repoName.toLowerCase().includes(search.toLowerCase())
+		r.repoName.toLowerCase().includes(search.toLowerCase()),
 	);
 
 	if (status === "loading") {
