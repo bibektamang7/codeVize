@@ -18,7 +18,7 @@ export const getAdminDashboardStats = asyncHandler(
 			prisma.repo.count({ where: { isActive: true } }),
 			prisma.payment.count(),
 			prisma.user.findFirst({
-				orderBy: { createdAt: "desc" },
+				orderBy: { createdAt: "asc" },
 				select: {
 					createdAt: true,
 					username: true,
@@ -60,7 +60,7 @@ export const getAdminDashboardStats = asyncHandler(
 				totalPayments,
 			},
 		});
-	}
+	},
 );
 
 export const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
@@ -193,7 +193,7 @@ export const getAllRepositories = asyncHandler(
 				pages: Math.ceil(total / Number(limit)),
 			},
 		});
-	}
+	},
 );
 
 export const deleteRepository = asyncHandler(
@@ -220,7 +220,7 @@ export const deleteRepository = asyncHandler(
 			success: true,
 			message: "Repository deleted successfully",
 		});
-	}
+	},
 );
 
 export const getAllPayments = asyncHandler(
@@ -276,5 +276,5 @@ export const getAllPayments = asyncHandler(
 				pages: Math.ceil(total / Number(limit)),
 			},
 		});
-	}
+	},
 );

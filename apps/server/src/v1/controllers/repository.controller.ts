@@ -24,12 +24,11 @@ export const getRepository = asyncHandler(
 		}
 		res.status(200).json({ repo });
 		return;
-	}
+	},
 );
 
 export const getAllRepositories = asyncHandler(
 	async (req: Request, res: Response) => {
-		console.log("this is user id", req.user.id);
 		const repositories = await prisma.repo.findMany({
 			where: {
 				userId: req.user.id,
@@ -40,9 +39,8 @@ export const getAllRepositories = asyncHandler(
 				isActive: true,
 			},
 		});
-		console.log("this is repos ", repositories);
 		res.status(200).json({ success: true, repositories: repositories || [] });
-	}
+	},
 );
 
 export const deactivateRepository = asyncHandler(
@@ -78,7 +76,7 @@ export const deactivateRepository = asyncHandler(
 		res
 			.status(200)
 			.json({ success: true, message: "Repository uninstalled successfully" });
-	}
+	},
 );
 
 export const activateRepository = asyncHandler(
@@ -86,7 +84,7 @@ export const activateRepository = asyncHandler(
 		if (req.user.plan.maxRepos <= req.user.activeRepos) {
 			throw new ApiError(
 				403,
-				"You have reached the maximum number of repositories for your plan."
+				"You have reached the maximum number of repositories for your plan.",
 			);
 		}
 		const { repoId } = req.params;
@@ -126,7 +124,7 @@ export const activateRepository = asyncHandler(
 			success: true,
 			message: "Repository activated successfully",
 		});
-	}
+	},
 );
 
 export const updateRepoConfig = asyncHandler(
@@ -224,7 +222,7 @@ export const updateRepoConfig = asyncHandler(
 		}
 
 		res.status(200).json({ success: true, repo: updatedRepo });
-	}
+	},
 );
 
 export const getRepositoriesLogs = asyncHandler(
@@ -232,16 +230,17 @@ export const getRepositoriesLogs = asyncHandler(
 		const repos = await prisma.repo.findMany({
 			where: {
 				userId: req.user.id,
-				repoConfig: {
-					errorLogs: {
-						some: {},
-					},
-				},
+				// repoConfig: {
+				// 	errorLogs: {
+				// 		every: {},
+				// 	},
+				// },
 			},
 			include: {
 				repoConfig: {
 					select: {
 						errorLogs: {
+							take: 1,
 							orderBy: { occurredAt: "desc" },
 							select: {
 								id: true,
@@ -259,5 +258,26 @@ export const getRepositoriesLogs = asyncHandler(
 
 		res.status(200).json({ repos });
 		return;
-	}
+	},
+);
+
+export const getRepositoryLogs = asyncHandler(
+	async (req: Request, res: Response) => {
+		const { repoId } = req.params;
+
+		if (!repoId || repoId.length == 0) {
+			throw new ApiError(401, "Repository id required");
+		}
+
+		const repoErrorLogs = await prisma.repoErrorLog.findMany({
+			where: {
+				repoConfig: {
+					repoId: repoId,
+				},
+			},
+		});
+
+		res.status(200).json({ logs: repoErrorLogs });
+		return;
+	},
 );

@@ -176,7 +176,7 @@ describe("Payment Controller", () => {
 				userId: "user1",
 				status: "COMPLETED",
 				validUntil: new Date(Date.now() + 86400000),
-			}; 
+			};
 
 			mockPrisma.plan.findUnique.mockResolvedValue(mockPlan);
 			mockPrisma.payment.findFirst.mockResolvedValue(mockValidPayment);

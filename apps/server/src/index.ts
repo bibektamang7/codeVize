@@ -18,7 +18,7 @@ app.use(
 		origin: process.env.CORS_ORIGIN || "http://localhost:3000",
 		credentials: true,
 		methods: ["POST", "GET", "PATCH", "PUT", "DELETE"],
-	})
+	}),
 );
 
 app.use(compression());

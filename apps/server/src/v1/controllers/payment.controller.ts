@@ -39,6 +39,7 @@ export const createPayment = asyncHandler(
 	async (req: Request, res: Response) => {
 		const { planName } = req.body;
 		const type = typeof planName;
+		console.log("is it here to create");
 		if (!planName || type !== "string") {
 			throw new ApiError(400, "Invalid credentials");
 		}
@@ -72,6 +73,7 @@ export const createPayment = asyncHandler(
 					planId: plan.id,
 				},
 			});
+			console.log("here comes to existed plan");
 			res.status(200).json({
 				redirect_url: `/dashboard/subscription/payment?success=true&plan=${plan.name}`,
 			});
@@ -79,8 +81,8 @@ export const createPayment = asyncHandler(
 		}
 
 		const formData = JSON.stringify({
-			return_url: "https://799920e12fcc.ngrok-free.app/api/payment/callback",
-			website_url: "http://localhost:3000",
+			return_url: "https://c1216483c80b.ngrok-free.app/api/payment/callback",
+			website_url: "https://c1216483c80b.ngrok-free.app",
 			amount: Number(plan.price) * 100,
 			purchase_order_id: plan.id,
 			purchase_order_name: req.user.id,
@@ -165,6 +167,7 @@ const addDays = (date: Date, days: number): Date => {
 
 export const paymentCallback = asyncHandler(
 	async (req: Request, res: Response) => {
+		console.log("are we even in callback");
 		const { pidx } = req.body;
 
 		const verifyRes = await fetch(
