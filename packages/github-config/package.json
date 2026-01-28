@@ -25,6 +25,7 @@
 		"bullmq-shared": "*",
 		"db": "*",
 		"logger": "*",
-		"octokit": "^5.0.3"
+		"octokit": "^5.0.3",
+		"rate-limiter-flexible": "^9.0.1"
 	}
 }

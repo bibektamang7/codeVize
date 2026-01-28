@@ -54,7 +54,7 @@ const validationNode = async (state: typeof PullRequestGraphState.State) => {
 
 	if (!repo) {
 		console.error(
-			`Repo ${state.owner}/${state.repoName} not found in database`
+			`Repo ${state.owner}/${state.repoName} not found in database`,
 		);
 		return new Send("__end__", {});
 	}
@@ -62,7 +62,7 @@ const validationNode = async (state: typeof PullRequestGraphState.State) => {
 	const repoConfiguration = repo.repoConfig;
 	if (!repoConfiguration) {
 		console.error(
-			`Review configuration not found for repo ${state.owner}/${state.repoName}`
+			`Review configuration not found for repo ${state.owner}/${state.repoName}`,
 		);
 		return new Send("errorOccured", {
 			...state,
@@ -80,7 +80,7 @@ const validationNode = async (state: typeof PullRequestGraphState.State) => {
 };
 
 const highLevelSummaryNode = async (
-	state: typeof PullRequestGraphState.State
+	state: typeof PullRequestGraphState.State,
 ) => {
 	console.log(`Generating high level summary for PR #${state.prNumber}`);
 
@@ -164,31 +164,28 @@ High-level Summary:`;
 				repo: state.repoName,
 				issue_number: state.prNumber,
 				body: `## High-Level Summary\n\n${summaryResponse.text}`,
-			}
+			},
 		);
 
 		console.log(
 			"Successfully posted high-level summary to the pull request.",
-			summarySubmit.data.author_association
+			summarySubmit.data.author_association,
 		);
 
 		return { ...state, review: summaryResponse.text };
 	} catch (error: any) {
-		console.error("Failed to generate high-level summary for PR", error);
 		return new Send("errorOccured", {
 			...state,
 			error: {
 				type: "High-Level Summary",
-				message:
-					error.message ||
-					`Failed to generate high-level summary for PR\n: ${error}`,
+				message: `Failed to generate high-level summary for PR\n: Too Many Requests`,
 			},
 		});
 	}
 };
 
 const handleErrorOccuredNode = async (
-	state: typeof PullRequestGraphState.State
+	state: typeof PullRequestGraphState.State,
 ) => {
 	try {
 		const error = state.error || {
@@ -227,25 +224,24 @@ export const pullRequestWorkflow = new StateGraph(PullRequestGraphState)
 	.addNode("validation", validationNode)
 	.addNode(
 		"highLevelSummary",
-		wrapNode("highLevelSummary", highLevelSummaryNode, 1350)
+		wrapNode("highLevelSummary", highLevelSummaryNode, 1350),
 	)
 	.addNode(
 		"tabularPRFilesSummarize",
-		wrapNode("tabularPRFilesSummarize", tabularPRDiffSummary, 1150)
+		wrapNode("tabularPRFilesSummarize", tabularPRDiffSummary, 1150),
 	)
 	.addNode(
 		"retrievePRFiles",
-		wrapNode("retrievePRFiles", retrievePRFiles, 1000)
+		wrapNode("retrievePRFiles", retrievePRFiles, 1000),
 	)
 	.addNode(
 		"checkBugsOrImprovement",
-		wrapNode("checkBugsOrImprovement", checkBugsOrImprovement, 1200)
+		wrapNode("checkBugsOrImprovement", checkBugsOrImprovement, 1200),
 	)
 	.addNode("errorOccured", handleErrorOccuredNode)
 	.addConditionalEdges(
 		"retrievePRFiles",
 		(state: typeof PullRequestGraphState.State) => {
-			console.log("this is tate", state);
 			if (
 				state.repo.repoConfig &&
 				!state.repo.repoConfig.reviewConfig.highLevelSummaryEnabled
@@ -253,7 +249,7 @@ export const pullRequestWorkflow = new StateGraph(PullRequestGraphState)
 				return "tabularPRFilesSummarize";
 			}
 			return "highLevelSummary";
-		}
+		},
 	)
 	.addConditionalEdges(
 		"highLevelSummary",
@@ -265,7 +261,7 @@ export const pullRequestWorkflow = new StateGraph(PullRequestGraphState)
 				return "checkBugsOrImprovement";
 			}
 			return "tabularPRFilesSummarize";
-		}
+		},
 	)
 	.addConditionalEdges(
 		"tabularPRFilesSummarize",
@@ -277,7 +273,7 @@ export const pullRequestWorkflow = new StateGraph(PullRequestGraphState)
 				return "__end__";
 			}
 			return "checkBugsOrImprovement";
-		}
+		},
 	)
 	.addEdge("__start__", "validation")
 	.addEdge("validation", "retrievePRFiles")

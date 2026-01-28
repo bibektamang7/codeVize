@@ -11,12 +11,17 @@
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
-		"prisma": "^6.12.0"
+		"@types/node": "^25.0.10",
+		"@types/pg": "^8.16.0",
+		"prisma": "^7.3.0"
 	},
 	"peerDependencies": {
 		"typescript": "^5"
 	},
 	"dependencies": {
-		"@prisma/client": "^6.12.0"
+		"@prisma/adapter-pg": "^7.3.0",
+		"@prisma/client": "^7.3.0",
+		"dotenv": "^17.2.3",
+		"pg": "^8.17.2"
 	}
 }

@@ -5,7 +5,7 @@ import { getCodeSummarizationModel } from "../codeSummarizationLLMFactory";
 import { getAuthenticatedOctokit } from "github-config";
 
 export const tabularPRDiffSummary = async (
-	State: typeof PullRequestGraphState.State
+	State: typeof PullRequestGraphState.State,
 ) => {
 	const filteredFiles = State.unReviewedFiles;
 
@@ -73,20 +73,18 @@ $file_diff
 				repo: State.repoName,
 				issue_number: State.prNumber,
 				body: summarizationResponse.text,
-			}
+			},
 		);
 		console.log(
 			"Successfully posted summary to the pull request.",
-			summarySubmit.data.author_association
+			summarySubmit.data.author_association,
 		);
 	} catch (error: any) {
-		console.log("this is error in summary", error);
-		console.error("Failed to summarize the PR diffs");
 		return new Send("errorOccured", {
 			...State,
 			error: {
 				type: "PR Summary",
-				message: error.message || `Failed to summarize PR\n: ${error}`,
+				message: `Failed to summarize PR\n: Try after some time.`,
 			},
 		});
 	}

@@ -1,6 +1,5 @@
-import { PrismaClient, ExistingPlan } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { ExistingPlan } from "@prisma/client";
+import { prisma } from "../src/prismaClient";
 
 async function main() {
 	const plans = [

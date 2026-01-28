@@ -11,7 +11,7 @@ const MAX_QUERY_LEN = 4000;
 const BATCH_SIZE = 10;
 
 export const checkBugsOrImprovement = async (
-	State: typeof PullRequestGraphState.State
+	State: typeof PullRequestGraphState.State,
 ) => {
 	const comments: any[] = [];
 	const filterSelectedFiles = State.unReviewedFiles;
@@ -33,6 +33,7 @@ export const checkBugsOrImprovement = async (
 				.trim()
 				.slice(0, MAX_QUERY_LEN);
 			if (!query) continue;
+			console.log("if js/ts project", State.repoConfigFiles);
 			const configContext = `
 Repo Config Files:
 
@@ -135,7 +136,7 @@ Format your comment exactly as follows:
 				.catch(() => {
 					console.log(
 						"Failed to update review count: user's ID -> ",
-						State.repo.user.id
+						State.repo.user.id,
 					);
 				});
 		}
@@ -175,6 +176,6 @@ export const publishSuggestion = async ({
 			owner: State.owner,
 			repo: State.repo,
 			pull_number: State.prNumber,
-		}
+		},
 	);
 };

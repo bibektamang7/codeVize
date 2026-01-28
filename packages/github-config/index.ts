@@ -8,6 +8,7 @@ import {
 	deleteEmbedding,
 	issueTriageSuggestion,
 } from "bullmq-shared";
+import { globalRateLimiter } from "./rateLimiter";
 
 const GITHUB_APP_ID = process.env.GITHUB_APP_ID;
 const GITHUB_APP_WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET;
@@ -255,6 +256,11 @@ githubApp.webhooks.on("pull_request.opened", async ({ payload }) => {
 				return;
 			}
 		}
+		// Rate limiter
+		const key = `PR-${payload.repository.id}`;
+		const limitRes = await globalRateLimiter.consume(key, 1);
+
+		console.log("rateLimit consumer", limitRes.consumedPoints);
 		const repo = await prisma.repo.findUnique({
 			where: {
 				repoId: String(payload.repository.id),
@@ -277,10 +283,11 @@ githubApp.webhooks.on("pull_request.opened", async ({ payload }) => {
 		});
 	} catch (error) {
 		logger.error("FAILED TO REVIEW PR");
+		// Later, send rate limit error in github
 	}
 });
 
-githubApp.webhooks.on("issues.opened", async ({ id, name, payload }) => {
+githubApp.webhooks.on("issues.opened", async ({ payload }) => {
 	const installationId = payload.installation?.id;
 	const repoId = payload.repository.id.toString();
 	const title = payload.issue.title;
@@ -295,6 +302,8 @@ githubApp.webhooks.on("issues.opened", async ({ id, name, payload }) => {
 		return;
 	}
 	try {
+		const key = `ISSUE-${payload.repository.id}`;
+		await globalRateLimiter.consume(key, 1);
 		const existedRepo = await prisma.repo.findUnique({
 			where: {
 				repoId,
