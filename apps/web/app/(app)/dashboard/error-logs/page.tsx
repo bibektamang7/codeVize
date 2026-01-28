@@ -6,9 +6,7 @@ import ErrorLogsClient from "./ErrorLogsClient";
 const ErrorLogsPage = async () => {
 	const repos = await getReposWithErrorLogs();
 
-	return (
-		<ErrorLogsClient repos={repos} />
-	);
+	return <ErrorLogsClient repos={repos} />;
 };
 
 export default ErrorLogsPage;

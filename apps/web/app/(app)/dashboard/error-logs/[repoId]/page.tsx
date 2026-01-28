@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Usable, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,8 @@ import {
 	Loader2,
 } from "lucide-react";
 import { RepositoryProps, RepoErrorLogProps } from "@/types/model.types";
+import { useSession } from "next-auth/react";
+import React from "react";
 
 interface ErrorLogsDetailPageProps {
 	params: {
@@ -22,7 +24,8 @@ interface ErrorLogsDetailPageProps {
 }
 
 const ErrorLogsDetailPage = ({ params }: ErrorLogsDetailPageProps) => {
-	const [repo, setRepo] = useState<RepositoryProps | null>(null);
+	const session = useSession();
+	const [errorLogs, setErrorLogs] = useState<RepoErrorLogProps[] | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
@@ -30,22 +33,23 @@ const ErrorLogsDetailPage = ({ params }: ErrorLogsDetailPageProps) => {
 		const fetchRepoData = async () => {
 			try {
 				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_BACKEND_URL}/repositories/${params.repoId}/logs`,
+					`${process.env.NEXT_PUBLIC_BACKEND_URL}/repositories/repository/${params.repoId}/logs`,
+					{
+						method: "GET",
+						headers: {
+							Authorization: `Bearer ${session.data?.user.token}`,
+						},
+					},
 				);
 
 				if (!response.ok) {
-					if (response.status === 401) {
-						// Redirect to login if unauthorized
-						window.location.href = "/login";
-						return;
-					}
 					throw new Error(
-						`Failed to fetch repository data: ${response.status} ${response.statusText}`,
+						`Failed to fetch repository logs: ${response.status} ${response.statusText}`,
 					);
 				}
 
 				const data = await response.json();
-				setRepo(data.repo);
+				setErrorLogs(data.logs);
 			} catch (err) {
 				setError(
 					err instanceof Error ? err.message : "An unknown error occurred",
@@ -117,7 +121,7 @@ const ErrorLogsDetailPage = ({ params }: ErrorLogsDetailPageProps) => {
 		);
 	}
 
-	if (!repo || !repo.repoConfig?.errorLogs) {
+	if (!errorLogs || errorLogs.length === 0) {
 		return (
 			<div className="container mx-auto py-8 px-4">
 				<div className="mb-6">
@@ -149,8 +153,6 @@ const ErrorLogsDetailPage = ({ params }: ErrorLogsDetailPageProps) => {
 		);
 	}
 
-	const errorLogs = repo.repoConfig.errorLogs;
-
 	return (
 		<div className="container mx-auto py-8 px-4">
 			<div className="mb-6">
@@ -166,7 +168,9 @@ const ErrorLogsDetailPage = ({ params }: ErrorLogsDetailPageProps) => {
 			<div className="mb-8">
 				<div className="flex items-center gap-2 mb-2">
 					<GitBranch className="h-5 w-5 text-muted-foreground" />
-					<h1 className="text-2xl sm:text-3xl font-bold">{repo.repoName}</h1>
+					<h1 className="text-2xl sm:text-3xl font-bold">
+						Repository Error Logs
+					</h1>
 				</div>
 				<p className="text-muted-foreground">
 					Showing {errorLogs.length} error{errorLogs.length !== 1 ? "s" : ""}{" "}
@@ -177,7 +181,7 @@ const ErrorLogsDetailPage = ({ params }: ErrorLogsDetailPageProps) => {
 			<div className="space-y-4">
 				{errorLogs.map((errorLog: RepoErrorLogProps, index: number) => (
 					<Card
-						key={`${repo.id}-${index}`}
+						key={`${params.repoId}-${index}`}
 						className="hover:shadow-md transition-shadow"
 					>
 						<CardHeader className="pb-3">
