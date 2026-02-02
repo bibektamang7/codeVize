@@ -174,6 +174,7 @@ High-level Summary:`;
 
 		return { ...state, review: summaryResponse.text };
 	} catch (error: any) {
+		console.log("error: ", error);
 		return new Send("errorOccured", {
 			...state,
 			error: {

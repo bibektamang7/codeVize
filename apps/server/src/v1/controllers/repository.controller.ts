@@ -230,11 +230,6 @@ export const getRepositoriesLogs = asyncHandler(
 		const repos = await prisma.repo.findMany({
 			where: {
 				userId: req.user.id,
-				// repoConfig: {
-				// 	errorLogs: {
-				// 		every: {},
-				// 	},
-				// },
 			},
 			include: {
 				repoConfig: {
