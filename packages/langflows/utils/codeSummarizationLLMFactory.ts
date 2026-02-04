@@ -1,16 +1,12 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatGroq } from "@langchain/groq";
 // import { GeminiModel } from "./Gemini";
 
 export const getCodeSummarizationModel = () => {
-	console.log("api key: ", process.env.MINIMAX_API_KEY);
-	return new ChatOpenAI({
-		model: "MiniMax-M2.1",
-		temperature: 0.8,
-		streaming: true,
-		apiKey: process.env.MINIMAX_API_KEY,
-		configuration: {
-			baseURL: "https://api.minimax.io/v1",
-		},
+	return new ChatGroq({
+		model: "llama-3.3-70b-versatile",
+		apiKey: process.env.GROQ_NEW_API_KEY,
+		temperature: 0,
+		maxRetries: 2,
 	});
 	// const provider = process.env.SUMMARIZATION_LLM_PROVIDER || "gemini-2.0-flash";
 	// const baseUrl =

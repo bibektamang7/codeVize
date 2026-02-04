@@ -15,17 +15,17 @@ export async function GET(req: NextRequest) {
 			headers: {
 				"Content-Type": "application/json",
 			},
-		}
+		},
 	);
 	if (!response.ok) {
 		return NextResponse.redirect(
-			"http://localhost:3000/dashboard/subscription/payment?error=payment_failed"
+			`${process.env.AUTH_URL}/dashboard/subscription/payment?error=payment_failed`,
 		);
 	}
 
 	const data = await response.json();
 
 	return NextResponse.redirect(
-		`http://localhost:3000/dashboard/subscription/payment?success=true&plan=${data.plan}`
+		`${process.env.AUTH_URL}/dashboard/subscription/payment?success=true&plan=${data.plan}`,
 	);
 }

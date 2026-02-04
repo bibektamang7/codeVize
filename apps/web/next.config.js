@@ -12,6 +12,9 @@ const nextConfig = {
 	},
 	experimental: {
 		optimizePackageImports: ["lucide-react"],
+		serverActions: {
+			allowedOrigins: ["jxvswcg0-3000.inc1.devtunnels.ms", "localhost:3000"]
+		}
 	},
 	images: {
 		remotePatterns: [

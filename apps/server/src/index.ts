@@ -15,7 +15,7 @@ app.use(middleware);
 // const ALLOWED_HEADERS = process.env.ALLOWED_HEADERS;
 app.use(
 	cors({
-		origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+		origin: "https://jxvswcg0-3000.inc1.devtunnels.ms",
 		credentials: true,
 		methods: ["POST", "GET", "PATCH", "PUT", "DELETE"],
 	}),

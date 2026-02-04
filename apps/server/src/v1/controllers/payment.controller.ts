@@ -12,7 +12,7 @@ export const getAllPayments = asyncHandler(
 		});
 
 		res.status(200).json({ success: true, payments });
-	}
+	},
 );
 
 export const getPayment = asyncHandler(async (req: Request, res: Response) => {
@@ -81,8 +81,9 @@ export const createPayment = asyncHandler(
 		}
 
 		const formData = JSON.stringify({
-			return_url: "https://c1216483c80b.ngrok-free.app/api/payment/callback",
-			website_url: "https://c1216483c80b.ngrok-free.app",
+			return_url:
+				"https://jxvswcg0-3000.inc1.devtunnels.ms/api/payment/callback",
+			website_url: "https://jxvswcg0-3000.inc1.devtunnels.ms/",
 			amount: Number(plan.price) * 100,
 			purchase_order_id: plan.id,
 			purchase_order_name: req.user.id,
@@ -99,7 +100,7 @@ export const createPayment = asyncHandler(
 				headers,
 				method: "POST",
 				body: formData,
-			}
+			},
 		);
 		if (!response.ok) {
 			throw new ApiError(401, "Something went wrong");
@@ -121,7 +122,7 @@ export const createPayment = asyncHandler(
 			throw new ApiError(400, "Failed to process payment");
 		}
 		res.status(200).json({ payment_url: data.payment_url });
-	}
+	},
 );
 
 export const updatePayment = asyncHandler(
@@ -140,7 +141,7 @@ export const updatePayment = asyncHandler(
 		});
 
 		res.status(200).json({ success: true, payment: updatedPayment });
-	}
+	},
 );
 
 export const deletePayment = asyncHandler(
@@ -156,7 +157,7 @@ export const deletePayment = asyncHandler(
 		res
 			.status(200)
 			.json({ success: true, message: "Payment deleted successfully" });
-	}
+	},
 );
 
 const addDays = (date: Date, days: number): Date => {
@@ -179,7 +180,7 @@ export const paymentCallback = asyncHandler(
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({ pidx }),
-			}
+			},
 		);
 
 		const data = (await verifyRes.json()) as any;
@@ -227,5 +228,5 @@ export const paymentCallback = asyncHandler(
 		});
 
 		res.status(400).json({ message: "Payment Failed" });
-	}
+	},
 );

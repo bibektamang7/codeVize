@@ -9,6 +9,7 @@ import { getCodeSummarizationModel } from "../utils/codeSummarizationLLMFactory"
 import { getAuthenticatedOctokit } from "github-config";
 import { highLevelPRSummaryPrompt } from "../prompts/reviewPrompt";
 import { simulateNodeExecution } from "../utils/mock";
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 
 type RepoConfigFiles = Record<string, string>;
 
@@ -146,14 +147,8 @@ High-level Summary:`;
 	try {
 		const summarizationModel = getCodeSummarizationModel();
 		const summaryResponse = await summarizationModel.invoke([
-			{
-				role: "system",
-				content: highLevelPRSummaryPrompt,
-			},
-			{
-				role: "user",
-				content: summaryPrompt,
-			},
+			new SystemMessage(highLevelPRSummaryPrompt),
+			new HumanMessage(summaryPrompt),
 		]);
 
 		const octokit = await getAuthenticatedOctokit(state.installationId);
